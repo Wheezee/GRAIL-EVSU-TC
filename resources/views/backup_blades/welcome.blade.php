@@ -3,107 +3,14 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>GRAIL Login</title>
-        <!-- Google Fonts: Anton -->
-        <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
-        <style>
-            body {
-                min-height: 100vh;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                position: relative;
-                overflow: hidden;
-            }
-            .font-anton { font-family: 'Anton', sans-serif; }
-            .absolute { position: absolute; }
-            .relative { position: relative; }
-            .z-0 { z-index: 0; }
-            .z-10 { z-index: 10; }
-            .w-full { width: 100%; }
-            .h-full { height: 100%; }
-            .object-cover { object-fit: cover; }
-            .blur-sm { filter: blur(6px); }
-            .scale-105 { transform: scale(1.05); }
-            .bg-white\/80 { background: rgba(255,255,255,0.8); }
-            .max-w-md { max-width: 28rem; }
-            .mx-auto { margin-left: auto; margin-right: auto; }
-            .skew-y-\[-6deg\] { transform: skewY(-6deg); }
-            .skew-y-\[6deg\] { transform: skewY(6deg); }
-            .bg-white { background: #fff; }
-            .shadow-2xl { box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
-            .rounded-2xl { border-radius: 1rem; }
-            .p-8 { padding: 2rem; }
-            .sm\:p-10 { padding: 2.5rem; }
-            .text-center { text-align: center; }
-            .mb-8 { margin-bottom: 2rem; }
-            .text-4xl { font-size: 2.25rem; }
-            .text-[#d30707] { color: #d30707; }
-            .mb-1 { margin-bottom: 0.25rem; }
-            .tracking-wide { letter-spacing: 0.05em; }
-            .text-base { font-size: 1rem; }
-            .font-semibold { font-weight: 600; }
-            .text-gray-700 { color: #374151; }
-            .mb-2 { margin-bottom: 0.5rem; }
-            .mb-6 { margin-bottom: 1.5rem; }
-            .p-4 { padding: 1rem; }
-            .bg-red-50 { background: #fef2f2; }
-            .border { border-width: 1px; border-style: solid; }
-            .border-red-200 { border-color: #fecaca; }
-            .rounded-lg { border-radius: 0.5rem; }
-            .flex { display: flex; }
-            .h-5 { height: 1.25rem; }
-            .w-5 { width: 1.25rem; }
-            .text-red-400 { color: #f87171; }
-            .mr-2 { margin-right: 0.5rem; }
-            .text-sm { font-size: 0.875rem; }
-            .text-red-800 { color: #991b1b; }
-            .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem; }
-            .block { display: block; }
-            .text-sm { font-size: 0.875rem; }
-            .font-medium { font-weight: 500; }
-            .mb-2 { margin-bottom: 0.5rem; }
-            .w-full { width: 100%; }
-            .px-4 { padding-left: 1rem; padding-right: 1rem; }
-            .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-            .border-gray-300 { border-color: #d1d5db; }
-            .focus\:ring-2:focus { box-shadow: 0 0 0 2px #d30707; }
-            .focus\:ring-\[#d30707\]:focus { box-shadow: 0 0 0 2px #d30707; }
-            .focus\:border-\[#d30707\]:focus { border-color: #d30707; }
-            .transition-colors { transition: color 0.2s, background 0.2s, border-color 0.2s; }
-            .duration-200 { transition-duration: 0.2s; }
-            .bg-white\/90 { background: rgba(255,255,255,0.9); }
-            .relative { position: relative; }
-            .pr-12 { padding-right: 3rem; }
-            .absolute { position: absolute; }
-            .inset-y-0 { top: 0; bottom: 0; }
-            .right-0 { right: 0; }
-            .pr-3 { padding-right: 0.75rem; }
-            .items-center { align-items: center; }
-            .text-gray-400 { color: #9ca3af; }
-            .hover\:text-gray-600:hover { color: #4b5563; }
-            .transition-colors { transition: color 0.2s; }
-            .w-full { width: 100%; }
-            .bg-\[#d30707\] { background: #d30707; }
-            .hover\:bg-\[#b70707\]:hover { background: #b70707; }
-            .text-white { color: #fff; }
-            .font-bold { font-weight: 700; }
-            .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-            .px-4 { padding-left: 1rem; padding-right: 1rem; }
-            .rounded-lg { border-radius: 0.5rem; }
-            .focus\:outline-none:focus { outline: none; }
-            .focus\:ring-2:focus { box-shadow: 0 0 0 2px #d30707; }
-            .focus\:ring-\[#d30707\]:focus { box-shadow: 0 0 0 2px #d30707; }
-            .focus\:ring-offset-2:focus { box-shadow: 0 0 0 4px #fff, 0 0 0 6px #d30707; }
-            .text-lg { font-size: 1.125rem; }
-            .tracking-wide { letter-spacing: 0.05em; }
-            .mt-6 { margin-top: 1.5rem; }
-            .text-gray-600 { color: #4b5563; }
-            .font-semibold { font-weight: 600; }
-            .transition-colors { transition: color 0.2s; }
-            .duration-200 { transition-duration: 0.2s; }
-            .hidden { display: none; }
-        </style>
+    <title>GRAIL Login</title>
+    <!-- Google Fonts: Anton -->
+    <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+    <link href="{{ asset('resources/css/bootstrap.min.css') }}" rel="stylesheet">
+            @vite(['resources/css/app.css', 'resources/js/app.js'])
+            <style>
+        .font-anton { font-family: 'Anton', sans-serif; }
+            </style>
     </head>
 <body class="min-h-screen flex items-center justify-center relative overflow-hidden">
     <!-- Blurred Background Image with Overlay -->
@@ -181,5 +88,6 @@
             }
         }
     </script>
-</body>
+    <script src="{{ asset('resources/js/bootstrap.bundle.min.js') }}"></script>
+    </body>
 </html>
