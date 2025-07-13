@@ -25,36 +25,36 @@
             .object-cover { object-fit: cover; }
             .blur-sm { filter: blur(6px); }
             .scale-105 { transform: scale(1.05); }
-            .bg-white\/80 { background: rgba(255,255,255,0.8); }
+            .bg-white\/80 { background: rgba(255,229,229,0.8); } /* light red overlay */
+            .bg-white { background: #ffe5e5; } /* very light red */
+            .bg-white\/90 { background: rgba(255,229,229,0.9); } /* lighter red for inputs */
             .max-w-md { max-width: 28rem; }
             .mx-auto { margin-left: auto; margin-right: auto; }
-            .skew-y-\[-6deg\] { transform: skewY(-6deg); }
+            .skew-y-\[-6deg\] { transform: skewY(-6deg); background: #ffe5e5; }
             .skew-y-\[6deg\] { transform: skewY(6deg); }
-            .bg-white { background: #fff; }
-            .shadow-2xl { box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+            .shadow-2xl { box-shadow: 0 10px 25px rgba(179,7,7,0.15); }
             .rounded-2xl { border-radius: 1rem; }
             .p-8 { padding: 2rem; }
             .sm\:p-10 { padding: 2.5rem; }
             .text-center { text-align: center; }
             .mb-8 { margin-bottom: 2rem; }
             .text-4xl { font-size: 2.25rem; }
-            .text-[#d30707] { color: #d30707; }
             .mb-1 { margin-bottom: 0.25rem; }
             .tracking-wide { letter-spacing: 0.05em; }
             .text-base { font-size: 1rem; }
             .font-semibold { font-weight: 600; }
-            .text-gray-700 { color: #374151; }
+            .text-gray-700 { color: #991b1b; }
             .mb-2 { margin-bottom: 0.5rem; }
             .mb-6 { margin-bottom: 1.5rem; }
             .p-4 { padding: 1rem; }
             .bg-red-50 { background: #fef2f2; }
             .border { border-width: 1px; border-style: solid; }
-            .border-red-200 { border-color: #fecaca; }
+            .border-red-200 { border-color: #ffcccc; }
             .rounded-lg { border-radius: 0.5rem; }
             .flex { display: flex; }
             .h-5 { height: 1.25rem; }
             .w-5 { width: 1.25rem; }
-            .text-red-400 { color: #f87171; }
+            .text-red-400 { color: #d30707; }
             .mr-2 { margin-right: 0.5rem; }
             .text-sm { font-size: 0.875rem; }
             .text-red-800 { color: #991b1b; }
@@ -66,13 +66,13 @@
             .w-full { width: 100%; }
             .px-4 { padding-left: 1rem; padding-right: 1rem; }
             .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-            .border-gray-300 { border-color: #d1d5db; }
+            .border-gray-300 { border-color: #ffcccc; }
             .focus\:ring-2:focus { box-shadow: 0 0 0 2px #d30707; }
             .focus\:ring-\[#d30707\]:focus { box-shadow: 0 0 0 2px #d30707; }
             .focus\:border-\[#d30707\]:focus { border-color: #d30707; }
             .transition-colors { transition: color 0.2s, background 0.2s, border-color 0.2s; }
             .duration-200 { transition-duration: 0.2s; }
-            .bg-white\/90 { background: rgba(255,255,255,0.9); }
+            .bg-white\/90 { background: rgba(255,229,229,0.9); }
             .relative { position: relative; }
             .pr-12 { padding-right: 3rem; }
             .absolute { position: absolute; }
@@ -80,12 +80,12 @@
             .right-0 { right: 0; }
             .pr-3 { padding-right: 0.75rem; }
             .items-center { align-items: center; }
-            .text-gray-400 { color: #9ca3af; }
-            .hover\:text-gray-600:hover { color: #4b5563; }
+            .text-gray-400 { color: #d30707; }
+            .hover\:text-gray-600:hover { color: #b70707; }
             .transition-colors { transition: color 0.2s; }
             .w-full { width: 100%; }
             .bg-\[#d30707\] { background: #d30707; }
-            .hover\:bg-\[#b70707\]:hover { background: #b70707; }
+            .hover\:bg-\[#b70707\]:hover { background: #991b1b; }
             .text-white { color: #fff; }
             .font-bold { font-weight: 700; }
             .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
@@ -94,15 +94,27 @@
             .focus\:outline-none:focus { outline: none; }
             .focus\:ring-2:focus { box-shadow: 0 0 0 2px #d30707; }
             .focus\:ring-\[#d30707\]:focus { box-shadow: 0 0 0 2px #d30707; }
-            .focus\:ring-offset-2:focus { box-shadow: 0 0 0 4px #fff, 0 0 0 6px #d30707; }
+            .focus\:ring-offset-2:focus { box-shadow: 0 0 0 4px #ffe5e5, 0 0 0 6px #d30707; }
             .text-lg { font-size: 1.125rem; }
             .tracking-wide { letter-spacing: 0.05em; }
             .mt-6 { margin-top: 1.5rem; }
-            .text-gray-600 { color: #4b5563; }
+            .text-gray-600 { color: #b70707; }
             .font-semibold { font-weight: 600; }
             .transition-colors { transition: color 0.2s; }
             .duration-200 { transition-duration: 0.2s; }
             .hidden { display: none; }
+            .btn-red {
+                background: #d30707;
+                color: #fff;
+                font-weight: 700;
+                border: none;
+                box-shadow: 0 2px 8px rgba(179,7,7,0.10);
+                transition: background 0.2s, color 0.2s;
+            }
+            .btn-red:hover, .btn-red:focus {
+                background: #991b1b;
+                color: #fff;
+            }
         </style>
     </head>
 <body class="min-h-screen flex items-center justify-center relative overflow-hidden">
@@ -116,7 +128,7 @@
         <div class="skew-y-[-6deg] bg-white shadow-2xl rounded-2xl p-8 sm:p-10">
             <div class="skew-y-[6deg]">
                 <div class="text-center mb-8">
-                    <h1 class="text-4xl font-anton text-[#d30707] mb-1 tracking-wide">GRAIL</h1>
+                    <h1 class="text-4xl font-anton mb-1 tracking-wide" style="color: #d30707;">GRAIL</h1>
                     <p class="text-base font-semibold text-gray-700 mb-2 tracking-wide">Grade and Risk Assessment through Intelligent Learning</p>
                     <p class="text-gray-700 text-base">Sign in to your account</p>
                 </div>
@@ -154,7 +166,7 @@
                             </button>
                         </div>
                     </div>
-                    <button type="submit" class="w-full bg-[#d30707] hover:bg-[#b70707] text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#d30707] focus:ring-offset-2 font-anton text-lg tracking-wide">Sign in</button>
+                    <button type="submit" class="w-full btn-red rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-[#d30707] focus:ring-offset-2 font-anton text-lg tracking-wide">Sign in</button>
                 </form>
                 <div class="mt-6 text-center">
                     <p class="text-sm text-gray-600">Don't have an account?
