@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('exam_id')->constrained()->onDelete('cascade');
             $table->foreignId('student_id')->constrained()->onDelete('cascade');
+            $table->enum('term', ['midterms', 'finals'])->default('midterms');
             $table->decimal('score', 5, 2)->nullable();
             $table->timestamp('submitted_at')->nullable();
             $table->timestamps();

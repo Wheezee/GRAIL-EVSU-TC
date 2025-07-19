@@ -16,6 +16,7 @@ class Activity extends Model
         'due_date',
         'description',
         'order',
+        'term'
     ];
 
     protected $casts = [

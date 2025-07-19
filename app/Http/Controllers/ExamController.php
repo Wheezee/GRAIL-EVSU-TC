@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Validator;
 
 class ExamController extends Controller
 {
-    public function index($subjectId, $classSectionId)
+    public function index($subjectId, $classSectionId, $term)
     {
         if (!auth()->user()->isTeacher()) {
             abort(403, 'Access denied. Teachers only.');
@@ -20,15 +20,14 @@ class ExamController extends Controller
             ->where('teacher_id', auth()->id())
             ->firstOrFail();
 
-        $exams = $classSection->subject->exams()->with('scores')->get();
+        $exams = $classSection->subject->exams()->where('term', $term)->with('scores')->get();
         $students = $classSection->students()->orderBy('last_name')->orderBy('first_name')->get();
-        
         $selectedExam = $exams->first();
 
-        return view('teacher.exams', compact('classSection', 'exams', 'students', 'selectedExam'));
+        return view('teacher.exams', compact('classSection', 'exams', 'students', 'selectedExam', 'term'));
     }
 
-    public function show($subjectId, $classSectionId, $examId)
+    public function show($subjectId, $classSectionId, $term, $examId)
     {
         if (!auth()->user()->isTeacher()) {
             abort(403, 'Access denied. Teachers only.');
@@ -38,19 +37,22 @@ class ExamController extends Controller
             ->where('teacher_id', auth()->id())
             ->firstOrFail();
 
-        $exams = $classSection->subject->exams()->with('scores')->get();
+        $exams = $classSection->subject->exams()->where('term', $term)->with('scores')->get();
         $students = $classSection->students()->orderBy('last_name')->orderBy('first_name')->get();
         $selectedExam = $exams->where('id', $examId)->first();
+
         if (!$selectedExam) {
-            // If the exam is missing, redirect to the exams index for this class section with a message
-            return redirect()->route('exams.index', ['subject' => $subjectId, 'classSection' => $classSectionId])
-                ->with('error', 'The selected exam could not be found.');
+            return redirect()->route('exams.index', [
+                'subject' => $subjectId,
+                'classSection' => $classSectionId,
+                'term' => $term
+            ]);
         }
 
-        return view('teacher.exams', compact('classSection', 'exams', 'students', 'selectedExam'));
+        return view('teacher.exams', compact('classSection', 'exams', 'students', 'selectedExam', 'term'));
     }
 
-    public function store(Request $request, $subjectId, $classSectionId)
+    public function store(Request $request, $subjectId, $classSectionId, $term)
     {
         if (!auth()->user()->isTeacher()) {
             abort(403, 'Access denied. Teachers only.');
@@ -74,13 +76,14 @@ class ExamController extends Controller
             'name' => $request->name,
             'max_score' => $request->max_score,
             'description' => $request->description,
-            'order' => $classSection->subject->exams()->count() + 1,
+            'order' => $classSection->subject->exams()->where('term', $term)->count() + 1,
+            'term' => $term,
         ]);
 
         return back()->with('success', 'Exam created successfully!');
     }
 
-    public function saveScores(Request $request, $subjectId, $classSectionId, $examId)
+    public function saveScores(Request $request, $subjectId, $classSectionId, $term, $examId)
     {
         if (!auth()->user()->isTeacher()) {
             abort(403, 'Access denied. Teachers only.');
@@ -90,7 +93,7 @@ class ExamController extends Controller
             ->where('teacher_id', auth()->id())
             ->firstOrFail();
 
-        $exam = $classSection->subject->exams()->findOrFail($examId);
+        $exam = $classSection->subject->exams()->where('term', $term)->findOrFail($examId);
         $students = $classSection->students;
 
         $validator = Validator::make($request->all(), [
@@ -109,6 +112,7 @@ class ExamController extends Controller
                 [
                     'exam_id' => $exam->id,
                     'student_id' => $student->id,
+                    'term' => $term,
                 ],
                 [
                     'score' => $score,
@@ -120,17 +124,11 @@ class ExamController extends Controller
         return back()->with('success', 'Scores saved successfully!');
     }
 
-    public function update(Request $request, $subjectId, $classSectionId, $examId)
+    public function update(Request $request, $subjectId, $classSectionId, $term, $examId)
     {
         if (!auth()->user()->isTeacher()) {
             abort(403, 'Access denied. Teachers only.');
         }
-
-        $classSection = ClassSection::where('id', $classSectionId)
-            ->where('teacher_id', auth()->id())
-            ->firstOrFail();
-
-        $exam = $classSection->subject->exams()->findOrFail($examId);
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
@@ -142,6 +140,12 @@ class ExamController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
+        $classSection = ClassSection::where('id', $classSectionId)
+            ->where('teacher_id', auth()->id())
+            ->firstOrFail();
+
+        $exam = $classSection->subject->exams()->where('term', $term)->findOrFail($examId);
+
         $exam->update([
             'name' => $request->name,
             'max_score' => $request->max_score,
@@ -151,17 +155,22 @@ class ExamController extends Controller
         return back()->with('success', 'Exam updated successfully!');
     }
 
-    public function destroy($subjectId, $classSectionId, $examId)
+    public function destroy($subjectId, $classSectionId, $term, $examId)
     {
         if (!auth()->user()->isTeacher()) {
             abort(403, 'Access denied. Teachers only.');
         }
 
-        $exam = Exam::findOrFail($examId);
+        $classSection = ClassSection::where('id', $classSectionId)
+            ->where('teacher_id', auth()->id())
+            ->firstOrFail();
+
+        $exam = $classSection->subject->exams()->where('term', $term)->findOrFail($examId);
         $exam->delete();
         return redirect()->route('exams.index', [
             'subject' => $subjectId,
-            'classSection' => $classSectionId
+            'classSection' => $classSectionId,
+            'term' => $term
         ])->with('success', 'Exam deleted successfully!');
     }
 }

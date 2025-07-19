@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Validator;
 
 class RecitationController extends Controller
 {
-    public function index($subjectId, $classSectionId)
+    public function index($subjectId, $classSectionId, $term)
     {
         if (!auth()->user()->isTeacher()) {
             abort(403, 'Access denied. Teachers only.');
@@ -20,15 +20,14 @@ class RecitationController extends Controller
             ->where('teacher_id', auth()->id())
             ->firstOrFail();
 
-        $recitations = $classSection->subject->recitations()->with('scores')->get();
+        $recitations = $classSection->subject->recitations()->where('term', $term)->with('scores')->get();
         $students = $classSection->students()->orderBy('last_name')->orderBy('first_name')->get();
-        
         $selectedRecitation = $recitations->first();
 
-        return view('teacher.recitations', compact('classSection', 'recitations', 'students', 'selectedRecitation'));
+        return view('teacher.recitations', compact('classSection', 'recitations', 'students', 'selectedRecitation', 'term'));
     }
 
-    public function show($subjectId, $classSectionId, $recitationId)
+    public function show($subjectId, $classSectionId, $term, $recitationId)
     {
         if (!auth()->user()->isTeacher()) {
             abort(403, 'Access denied. Teachers only.');
@@ -38,19 +37,22 @@ class RecitationController extends Controller
             ->where('teacher_id', auth()->id())
             ->firstOrFail();
 
-        $recitations = $classSection->subject->recitations()->with('scores')->get();
+        $recitations = $classSection->subject->recitations()->where('term', $term)->with('scores')->get();
         $students = $classSection->students()->orderBy('last_name')->orderBy('first_name')->get();
         $selectedRecitation = $recitations->where('id', $recitationId)->first();
+
         if (!$selectedRecitation) {
-            // If the recitation is missing, redirect to the recitations index for this class section with a message
-            return redirect()->route('recitations.index', ['subject' => $subjectId, 'classSection' => $classSectionId])
-                ->with('error', 'The selected recitation could not be found.');
+            return redirect()->route('recitations.index', [
+                'subject' => $subjectId,
+                'classSection' => $classSectionId,
+                'term' => $term
+            ]);
         }
 
-        return view('teacher.recitations', compact('classSection', 'recitations', 'students', 'selectedRecitation'));
+        return view('teacher.recitations', compact('classSection', 'recitations', 'students', 'selectedRecitation', 'term'));
     }
 
-    public function store(Request $request, $subjectId, $classSectionId)
+    public function store(Request $request, $subjectId, $classSectionId, $term)
     {
         if (!auth()->user()->isTeacher()) {
             abort(403, 'Access denied. Teachers only.');
@@ -74,13 +76,14 @@ class RecitationController extends Controller
             'name' => $request->name,
             'max_score' => $request->max_score,
             'description' => $request->description,
-            'order' => $classSection->subject->recitations()->count() + 1,
+            'order' => $classSection->subject->recitations()->where('term', $term)->count() + 1,
+            'term' => $term,
         ]);
 
         return back()->with('success', 'Recitation created successfully!');
     }
 
-    public function saveScores(Request $request, $subjectId, $classSectionId, $recitationId)
+    public function saveScores(Request $request, $subjectId, $classSectionId, $term, $recitationId)
     {
         if (!auth()->user()->isTeacher()) {
             abort(403, 'Access denied. Teachers only.');
@@ -90,7 +93,7 @@ class RecitationController extends Controller
             ->where('teacher_id', auth()->id())
             ->firstOrFail();
 
-        $recitation = $classSection->subject->recitations()->findOrFail($recitationId);
+        $recitation = $classSection->subject->recitations()->where('term', $term)->findOrFail($recitationId);
         $students = $classSection->students;
 
         $validator = Validator::make($request->all(), [
@@ -109,6 +112,7 @@ class RecitationController extends Controller
                 [
                     'recitation_id' => $recitation->id,
                     'student_id' => $student->id,
+                    'term' => $term,
                 ],
                 [
                     'score' => $score,
@@ -120,17 +124,11 @@ class RecitationController extends Controller
         return back()->with('success', 'Scores saved successfully!');
     }
 
-    public function update(Request $request, $subjectId, $classSectionId, $recitationId)
+    public function update(Request $request, $subjectId, $classSectionId, $term, $recitationId)
     {
         if (!auth()->user()->isTeacher()) {
             abort(403, 'Access denied. Teachers only.');
         }
-
-        $classSection = ClassSection::where('id', $classSectionId)
-            ->where('teacher_id', auth()->id())
-            ->firstOrFail();
-
-        $recitation = $classSection->subject->recitations()->findOrFail($recitationId);
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
@@ -142,6 +140,12 @@ class RecitationController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
+        $classSection = ClassSection::where('id', $classSectionId)
+            ->where('teacher_id', auth()->id())
+            ->firstOrFail();
+
+        $recitation = $classSection->subject->recitations()->where('term', $term)->findOrFail($recitationId);
+
         $recitation->update([
             'name' => $request->name,
             'max_score' => $request->max_score,
@@ -151,17 +155,22 @@ class RecitationController extends Controller
         return back()->with('success', 'Recitation updated successfully!');
     }
 
-    public function destroy($subjectId, $classSectionId, $recitationId)
+    public function destroy($subjectId, $classSectionId, $term, $recitationId)
     {
         if (!auth()->user()->isTeacher()) {
             abort(403, 'Access denied. Teachers only.');
         }
 
-        $recitation = Recitation::findOrFail($recitationId);
+        $classSection = ClassSection::where('id', $classSectionId)
+            ->where('teacher_id', auth()->id())
+            ->firstOrFail();
+
+        $recitation = $classSection->subject->recitations()->where('term', $term)->findOrFail($recitationId);
         $recitation->delete();
         return redirect()->route('recitations.index', [
             'subject' => $subjectId,
-            'classSection' => $classSectionId
+            'classSection' => $classSectionId,
+            'term' => $term
         ])->with('success', 'Recitation deleted successfully!');
     }
 }

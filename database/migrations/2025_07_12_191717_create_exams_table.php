@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('subject_id')->constrained()->onDelete('cascade');
             $table->string('name');
+            $table->enum('term', ['midterms', 'finals'])->default('midterms');
             $table->decimal('max_score', 5, 2);
             $table->text('description')->nullable();
             $table->integer('order')->default(1);

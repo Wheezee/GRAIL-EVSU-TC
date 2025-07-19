@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('activities', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('class_section_id')->constrained()->onDelete('cascade');
+            $table->foreignId('subject_id')->constrained()->onDelete('cascade');
             $table->string('name');
+            $table->enum('term', ['midterms', 'finals'])->default('midterms');
             $table->decimal('max_score', 5, 2); // e.g., 100.00
             $table->date('due_date')->nullable();
             $table->text('description')->nullable();

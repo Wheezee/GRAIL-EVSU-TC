@@ -15,6 +15,7 @@ class Recitation extends Model
         'max_score',
         'description',
         'order',
+        'term',
     ];
 
     protected $casts = [

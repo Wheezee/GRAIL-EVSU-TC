@@ -63,4 +63,9 @@ class Subject extends Model
     {
         return $this->hasMany(Project::class)->orderBy('order');
     }
+
+    public function gradingWeight()
+    {
+        return $this->hasOne(GradingWeight::class);
+    }
 }

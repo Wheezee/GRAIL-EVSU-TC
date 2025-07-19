@@ -96,6 +96,28 @@
   </ol>
 </nav>
 
+<!-- Term Switcher Tabs -->
+<div class="mb-6 flex gap-2">
+    @php
+        $termTabs = [
+            'midterms' => 'Midterms',
+            'finals' => 'Finals',
+        ];
+        $currentRoute = Route::currentRouteName();
+        $routeParams = array_merge(request()->route()->parameters(), []);
+    @endphp
+    @foreach ($termTabs as $slug => $label)
+        @php
+            $params = array_merge($routeParams, ['term' => $slug]);
+        @endphp
+        <a href="{{ route($currentRoute, $params) }}"
+           class="px-4 py-2 rounded-t-lg font-semibold transition-colors duration-150
+                  {{ $term === $slug ? 'bg-evsu text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-evsu hover:text-white' }}">
+            {{ $label }}
+        </a>
+    @endforeach
+</div>
+
 @if (session('success'))
   <div id="successMessage" class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg transform transition-all duration-500 ease-out">
     <div class="flex items-center gap-3">
@@ -146,7 +168,7 @@
     <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ $classSection->section }}</h2>
     <p class="text-gray-600 dark:text-gray-400 mt-1">{{ $classSection->subject->code }} - {{ $classSection->subject->title }}</p>
   </div>
-  <a href="{{ route('gradebook.all', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id]) }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-evsu hover:bg-evsuDark text-white font-semibold rounded-lg shadow transition-transform transform hover:scale-105 focus:outline-none">
+  <a href="{{ route('gradebook.all', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'term' => $term]) }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-evsu hover:bg-evsuDark text-white font-semibold rounded-lg shadow transition-transform transform hover:scale-105 focus:outline-none">
     <i data-lucide="clipboard-list" class="w-5 h-5"></i>
     Gradebook (All)
   </a>
@@ -157,7 +179,7 @@
   <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Grading Categories</h3>
   <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
     <!-- Activities Card -->
-    <div class="group cursor-pointer" onclick="window.location.href='{{ route('activities.index', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id]) }}'">
+    <div class="group cursor-pointer" onclick="window.location.href='{{ route('activities.index', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'term' => $term]) }}'">
       <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm hover:shadow-lg hover:scale-105 transition-all duration-200">
         <div class="text-center">
           <div class="text-3xl mb-3">📝</div>
@@ -168,7 +190,7 @@
     </div>
 
     <!-- Quizzes Card -->
-    <div class="group cursor-pointer" onclick="window.location.href='{{ route('quizzes.index', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id]) }}'">
+    <div class="group cursor-pointer" onclick="window.location.href='{{ route('quizzes.index', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'term' => $term]) }}'">
       <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm hover:shadow-lg hover:scale-105 transition-all duration-200">
         <div class="text-center">
           <div class="text-3xl mb-3">📊</div>
@@ -179,7 +201,7 @@
     </div>
 
     <!-- Exams Card -->
-    <div class="group cursor-pointer" onclick="window.location.href='{{ route('exams.index', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id]) }}'">
+    <div class="group cursor-pointer" onclick="window.location.href='{{ route('exams.index', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'term' => $term]) }}'">
       <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm hover:shadow-lg hover:scale-105 transition-all duration-200">
         <div class="text-center">
           <div class="text-3xl mb-3">🧪</div>
@@ -190,7 +212,7 @@
     </div>
 
     <!-- Recitation Card -->
-    <div class="group cursor-pointer" onclick="window.location.href='{{ route('recitations.index', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id]) }}'">
+    <div class="group cursor-pointer" onclick="window.location.href='{{ route('recitations.index', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'term' => $term]) }}'">
       <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm hover:shadow-lg hover:scale-105 transition-all duration-200">
         <div class="text-center">
           <div class="text-3xl mb-3">🎤</div>
@@ -201,7 +223,7 @@
     </div>
 
     <!-- Project Card -->
-    <div class="group cursor-pointer" onclick="window.location.href='{{ route('projects.index', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id]) }}'">
+    <div class="group cursor-pointer" onclick="window.location.href='{{ route('projects.index', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'term' => $term]) }}'">
       <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm hover:shadow-lg hover:scale-105 transition-all duration-200">
         <div class="text-center">
           <div class="text-3xl mb-3">📋</div>

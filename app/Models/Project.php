@@ -17,6 +17,7 @@ class Project extends Model
         'description',
         'due_date',
         'order',
+        'term',
     ];
 
     protected $casts = [

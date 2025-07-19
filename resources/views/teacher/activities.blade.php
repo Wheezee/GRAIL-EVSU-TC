@@ -133,7 +133,7 @@
     </li>
     <li class="flex items-center">
       <i data-lucide="chevron-right" class="w-3 h-3 sm:w-4 sm:h-4 mx-1 sm:mx-2 flex-shrink-0"></i>
-      <a href="{{ route('grading.system', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id]) }}" class="hover:text-evsu dark:hover:text-evsu transition-colors whitespace-nowrap">
+      <a href="{{ route('grading.system', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'term' => $term]) }}" class="hover:text-evsu dark:hover:text-evsu transition-colors whitespace-nowrap">
         {{ $classSection->section }}
       </a>
     </li>
@@ -144,7 +144,32 @@
   </ol>
 </nav>
 
-@if (session('success'))
+<!-- Term Switcher Tabs -->
+<div class="mb-6 flex gap-2 term-switcher">
+    @php
+        $termTabs = [
+            'midterms' => 'Midterms',
+            'finals' => 'Finals',
+        ];
+        $currentRoute = Route::currentRouteName();
+        $routeParams = array_merge(request()->route()->parameters(), []);
+    @endphp
+    @foreach ($termTabs as $slug => $label)
+        @php
+            $params = array_merge($routeParams, ['term' => $slug]);
+        @endphp
+        <a href="{{ route($currentRoute, $params) }}"
+           class="px-4 py-2 rounded-t-lg font-semibold transition-colors duration-150
+                  {{ $term === $slug ? 'bg-evsu text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-evsu hover:text-white' }}">
+            {{ $label }}
+        </a>
+    @endforeach
+</div>
+
+<!-- DEBUG: Show current term -->
+<!-- <div class="mb-2 text-xs text-evsu font-bold">DEBUG: Current term = {{ $term }}</div> -->
+
+@if (session('success'))  
   <div id="successMessage" class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg transform transition-all duration-500 ease-out">
     <div class="flex items-center gap-3">
       <div class="success-checkmark">
@@ -206,7 +231,7 @@
     <div class="flex flex-wrap gap-2 border-b border-gray-200 dark:border-gray-700">
       @foreach($activities as $activity)
         <div class="px-0 py-0 text-sm font-medium rounded-t-lg transition-all duration-200 flex items-center group {{ $selectedActivity && $selectedActivity->id === $activity->id ? 'bg-evsu text-white' : 'text-gray-600 dark:text-gray-400 hover:text-evsu dark:hover:text-evsu hover:bg-gray-100 dark:hover:bg-gray-700' }}">
-          <a href="{{ route('activities.show', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'activity' => $activity->id]) }}" class="flex-1 px-4 py-2 flex items-center min-w-0">
+          <a href="{{ route('activities.show', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'activity' => $activity->id, 'term' => $term]) }}" class="flex-1 px-4 py-2 flex items-center min-w-0">
             <span class="truncate">{{ $activity->name }}</span>
           </a>
         </div>
@@ -250,7 +275,7 @@
           </button>
           <form id="delete-activity-form-{{ $selectedActivity->id }}"
                 method="POST"
-                action="{{ route('activities.destroy', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'activity' => $selectedActivity->id]) }}"
+                action="{{ route('activities.destroy', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'activity' => $selectedActivity->id, 'term' => $term]) }}"
                 style="display: none;">
             @csrf
             @method('DELETE')
@@ -261,7 +286,7 @@
 
     <!-- Grading Sheet Table -->
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
-      <form method="POST" action="{{ route('activities.scores.save', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'activity' => $selectedActivity->id]) }}" id="scoresForm">
+      <form method="POST" action="{{ route('activities.scores.save', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'activity' => $selectedActivity->id, 'term' => $term]) }}" id="scoresForm">
         @csrf
         <div class="overflow-x-auto">
           <table class="w-full">
@@ -330,7 +355,7 @@
     <p class="text-lg text-gray-500 mb-2">No activities found. Click 'Add Activity' to get started.</p>
     <button onclick="openAddActivityModal()" class="inline-flex items-center gap-2 px-5 py-2.5 bg-evsu hover:bg-evsuDark text-white font-semibold rounded-lg shadow transition-transform transform hover:scale-105 focus:outline-none">
       <i data-lucide="plus" class="w-5 h-5"></i>
-      ➕ Add Activity
+      Add Activity
     </button>
   </div>
 @endif
@@ -350,7 +375,7 @@
     </div>
 
     <!-- Modal Body -->
-    <form method="POST" action="{{ route('activities.store', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id]) }}" class="p-6">
+    <form method="POST" action="{{ route('activities.store', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'term' => $term]) }}" class="p-6">
       @csrf
       <div class="space-y-4">
         <!-- Activity Name -->
@@ -422,7 +447,7 @@
     </div>
 
     <!-- Modal Body -->
-    <form method="POST" action="{{ $selectedActivity ? route('activities.update', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'activity' => $selectedActivity->id]) : '#' }}" class="p-6">
+    <form method="POST" action="{{ $selectedActivity ? route('activities.update', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'activity' => $selectedActivity->id, 'term' => $term]) : '#' }}" class="p-6">
       @csrf
       @method('PUT')
       <div class="space-y-4">
@@ -636,5 +661,17 @@ setTimeout(function() {
     }, 500);
   }
 }, 5000);
+
+document.querySelectorAll('.term-switcher a').forEach(tab => {
+    tab.addEventListener('click', function() {
+        const modal = document.getElementById('addActivityModal');
+        if (modal && !modal.classList.contains('hidden')) {
+            console.log('[DEBUG] Closing add activity modal due to term switch');
+            closeAddActivityModal();
+        } else {
+            console.log('[DEBUG] Term tab clicked, modal was not open');
+        }
+    });
+});
 </script>
 @endsection 

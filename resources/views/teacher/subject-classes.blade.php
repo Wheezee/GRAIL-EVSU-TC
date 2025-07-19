@@ -108,7 +108,7 @@
   <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
     @foreach ($classes as $class)
       <div class="relative group" data-class-id="{{ $class->id }}">
-        <a href="{{ route('grading.system', ['subject' => $subject->id, 'classSection' => $class->id]) }}"
+        <a href="{{ route('grading.system', ['subject' => $subject->id, 'classSection' => $class->id, 'term' => isset($term) ? $term : 'midterms']) }}"
            class="block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer">
           <div class="mb-2">
             <span class="text-xl font-extrabold text-evsu dark:text-evsu block leading-tight" data-class-section="{{ $class->section }}">{{ $class->section }}</span>

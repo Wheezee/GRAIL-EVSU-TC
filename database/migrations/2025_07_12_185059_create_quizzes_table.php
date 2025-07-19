@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('quizzes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('class_section_id')->constrained()->onDelete('cascade');
+            $table->foreignId('subject_id')->constrained()->onDelete('cascade');
             $table->string('name');
+            $table->enum('term', ['midterms', 'finals'])->default('midterms');
             $table->decimal('max_score', 5, 2);
             $table->text('description')->nullable();
             $table->integer('order')->default(1);

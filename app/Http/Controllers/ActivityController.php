@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Validator;
 
 class ActivityController extends Controller
 {
-    public function index($subjectId, $classSectionId)
+    public function index($subjectId, $classSectionId, $term)
     {
         if (!auth()->user()->isTeacher()) {
             abort(403, 'Access denied. Teachers only.');
@@ -20,15 +20,14 @@ class ActivityController extends Controller
             ->where('teacher_id', auth()->id())
             ->firstOrFail();
 
-        $activities = $classSection->subject->activities()->with('scores')->get();
+        $activities = $classSection->subject->activities()->where('term', $term)->with('scores')->get();
         $students = $classSection->students()->orderBy('last_name')->orderBy('first_name')->get();
-        
         $selectedActivity = $activities->first();
 
-        return view('teacher.activities', compact('classSection', 'activities', 'students', 'selectedActivity'));
+        return view('teacher.activities', compact('classSection', 'activities', 'students', 'selectedActivity', 'term'));
     }
 
-    public function show($subjectId, $classSectionId, $activityId)
+    public function show($subjectId, $classSectionId, $term, $activityId)
     {
         if (!auth()->user()->isTeacher()) {
             abort(403, 'Access denied. Teachers only.');
@@ -38,14 +37,22 @@ class ActivityController extends Controller
             ->where('teacher_id', auth()->id())
             ->firstOrFail();
 
-        $activities = $classSection->subject->activities()->with('scores')->get();
+        $activities = $classSection->subject->activities()->where('term', $term)->with('scores')->get();
         $students = $classSection->students()->orderBy('last_name')->orderBy('first_name')->get();
-        $selectedActivity = $activities->where('id', $activityId)->firstOrFail();
+        $selectedActivity = $activities->where('id', $activityId)->first();
 
-        return view('teacher.activities', compact('classSection', 'activities', 'students', 'selectedActivity'));
+        if (!$selectedActivity) {
+            return redirect()->route('activities.index', [
+                'subject' => $subjectId,
+                'classSection' => $classSectionId,
+                'term' => $term
+            ]);
+        }
+
+        return view('teacher.activities', compact('classSection', 'activities', 'students', 'selectedActivity', 'term'));
     }
 
-    public function store(Request $request, $subjectId, $classSectionId)
+    public function store(Request $request, $subjectId, $classSectionId, $term)
     {
         if (!auth()->user()->isTeacher()) {
             abort(403, 'Access denied. Teachers only.');
@@ -71,13 +78,14 @@ class ActivityController extends Controller
             'max_score' => $request->max_score,
             'due_date' => $request->due_date,
             'description' => $request->description,
-            'order' => $classSection->subject->activities()->count() + 1,
+            'order' => $classSection->subject->activities()->where('term', $term)->count() + 1,
+            'term' => $term,
         ]);
 
         return back()->with('success', 'Activity created successfully!');
     }
 
-    public function saveScores(Request $request, $subjectId, $classSectionId, $activityId)
+    public function saveScores(Request $request, $subjectId, $classSectionId, $term, $activityId)
     {
         if (!auth()->user()->isTeacher()) {
             abort(403, 'Access denied. Teachers only.');
@@ -87,7 +95,7 @@ class ActivityController extends Controller
             ->where('teacher_id', auth()->id())
             ->firstOrFail();
 
-        $activity = $classSection->subject->activities()->findOrFail($activityId);
+        $activity = $classSection->subject->activities()->where('term', $term)->findOrFail($activityId);
         $students = $classSection->students;
 
         $validator = Validator::make($request->all(), [
@@ -111,6 +119,7 @@ class ActivityController extends Controller
                 [
                     'activity_id' => $activity->id,
                     'student_id' => $student->id,
+                    'term' => $term,
                 ],
                 [
                     'score' => $score,
@@ -123,28 +132,28 @@ class ActivityController extends Controller
         return back()->with('success', 'Scores saved successfully!');
     }
 
-    public function update(Request $request, $subjectId, $classSectionId, $activityId)
+    public function update(Request $request, $subjectId, $classSectionId, $term, $activityId)
     {
         if (!auth()->user()->isTeacher()) {
             abort(403, 'Access denied. Teachers only.');
         }
 
-        $classSection = ClassSection::where('id', $classSectionId)
-            ->where('teacher_id', auth()->id())
-            ->firstOrFail();
-
-        $activity = $classSection->subject->activities()->findOrFail($activityId);
-
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'max_score' => 'required|numeric|min:0.01|max:999.99',
-            'due_date' => 'nullable|date',
+            'due_date' => 'nullable|date|after_or_equal:today',
             'description' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
+
+        $classSection = ClassSection::where('id', $classSectionId)
+            ->where('teacher_id', auth()->id())
+            ->firstOrFail();
+
+        $activity = $classSection->subject->activities()->where('term', $term)->findOrFail($activityId);
 
         $activity->update([
             'name' => $request->name,
@@ -156,17 +165,22 @@ class ActivityController extends Controller
         return back()->with('success', 'Activity updated successfully!');
     }
 
-    public function destroy($subjectId, $classSectionId, $activityId)
+    public function destroy($subjectId, $classSectionId, $term, $activityId)
     {
         if (!auth()->user()->isTeacher()) {
             abort(403, 'Access denied. Teachers only.');
         }
 
-        $activity = Activity::findOrFail($activityId);
+        $classSection = ClassSection::where('id', $classSectionId)
+            ->where('teacher_id', auth()->id())
+            ->firstOrFail();
+
+        $activity = $classSection->subject->activities()->where('term', $term)->findOrFail($activityId);
         $activity->delete();
         return redirect()->route('activities.index', [
             'subject' => $subjectId,
-            'classSection' => $classSectionId
+            'classSection' => $classSectionId,
+            'term' => $term
         ])->with('success', 'Activity deleted successfully!');
     }
 }

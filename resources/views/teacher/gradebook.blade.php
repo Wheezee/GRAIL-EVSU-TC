@@ -23,7 +23,7 @@
     </li>
     <li class="flex items-center">
       <i data-lucide="chevron-right" class="w-4 h-4 mx-2"></i>
-      <a href="{{ route('grading.system', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id]) }}" class="hover:text-evsu dark:hover:text-evsu transition-colors">
+      <a href="{{ route('grading.system', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'term' => isset($term) ? $term : 'midterms']) }}" class="hover:text-evsu dark:hover:text-evsu transition-colors">
         {{ $classSection->section }}
       </a>
     </li>
@@ -52,193 +52,155 @@
   </div>
 </div>
 
-<!-- Gradebook Table -->
-<div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
-  <div class="overflow-x-auto">
-    <table class="w-full">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider sticky left-0 bg-gray-50 dark:bg-gray-700 z-10">Student</th>
-          <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider bg-blue-50 dark:bg-blue-900/20">Activities</th>
-          <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider bg-green-50 dark:bg-green-900/20">Quizzes</th>
-          <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider bg-yellow-50 dark:bg-yellow-900/20">Exams</th>
-          <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider bg-purple-50 dark:bg-purple-900/20">Recitation</th>
-          <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider bg-indigo-50 dark:bg-indigo-900/20">Projects</th>
-          <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider bg-gray-100 dark:bg-gray-600">Final Grade</th>
-        </tr>
-        <tr>
-          <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider sticky left-0 bg-gray-50 dark:bg-gray-700 z-10">Name</th>
-          <th class="px-6 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider bg-blue-50 dark:bg-blue-900/20">A1 | A2 | A3</th>
-          <th class="px-6 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider bg-green-50 dark:bg-green-900/20">Q1 | Q2 | Q3</th>
-          <th class="px-6 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider bg-yellow-50 dark:bg-yellow-900/20">Mid | Final</th>
-          <th class="px-6 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider bg-purple-50 dark:bg-purple-900/20">R1 | R2 | R3</th>
-          <th class="px-6 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider bg-indigo-50 dark:bg-indigo-900/20">P1 | P2</th>
-          <th class="px-6 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider bg-gray-100 dark:bg-gray-600">Grade</th>
-        </tr>
-      </thead>
-      <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-        <!-- Placeholder data - will be dynamic -->
-        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 sticky left-0 bg-white dark:bg-gray-800 z-10">
-            <div>
-              <div class="font-medium">Juan Dela Cruz</div>
-              <div class="text-gray-500 dark:text-gray-400">2025-0001</div>
-            </div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-center bg-blue-50 dark:bg-blue-900/20">
-            <div class="grid grid-cols-3 gap-1">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-            </div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-center bg-green-50 dark:bg-green-900/20">
-            <div class="grid grid-cols-3 gap-1">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-            </div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-center bg-yellow-50 dark:bg-yellow-900/20">
-            <div class="grid grid-cols-2 gap-1">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-            </div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-center bg-purple-50 dark:bg-purple-900/20">
-            <div class="grid grid-cols-3 gap-1">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-            </div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-center bg-indigo-50 dark:bg-indigo-900/20">
-            <div class="grid grid-cols-2 gap-1">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-            </div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-center bg-gray-100 dark:bg-gray-600">
-            <div class="font-semibold text-gray-900 dark:text-gray-100">--</div>
-          </td>
-        </tr>
-        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 sticky left-0 bg-white dark:bg-gray-800 z-10">
-            <div>
-              <div class="font-medium">Maria S. Reyes</div>
-              <div class="text-gray-500 dark:text-gray-400">2025-0002</div>
-            </div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-center bg-blue-50 dark:bg-blue-900/20">
-            <div class="grid grid-cols-3 gap-1">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-            </div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-center bg-green-50 dark:bg-green-900/20">
-            <div class="grid grid-cols-3 gap-1">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-            </div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-center bg-yellow-50 dark:bg-yellow-900/20">
-            <div class="grid grid-cols-2 gap-1">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-            </div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-center bg-purple-50 dark:bg-purple-900/20">
-            <div class="grid grid-cols-3 gap-1">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-            </div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-center bg-indigo-50 dark:bg-indigo-900/20">
-            <div class="grid grid-cols-2 gap-1">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-            </div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-center bg-gray-100 dark:bg-gray-600">
-            <div class="font-semibold text-gray-900 dark:text-gray-100">--</div>
-          </td>
-        </tr>
-        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 sticky left-0 bg-white dark:bg-gray-800 z-10">
-            <div>
-              <div class="font-medium">Pedro Santos</div>
-              <div class="text-gray-500 dark:text-gray-400">2025-0003</div>
-            </div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-center bg-blue-50 dark:bg-blue-900/20">
-            <div class="grid grid-cols-3 gap-1">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-            </div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-center bg-green-50 dark:bg-green-900/20">
-            <div class="grid grid-cols-3 gap-1">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-            </div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-center bg-yellow-50 dark:bg-yellow-900/20">
-            <div class="grid grid-cols-2 gap-1">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-            </div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-center bg-purple-50 dark:bg-purple-900/20">
-            <div class="grid grid-cols-3 gap-1">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-            </div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-center bg-indigo-50 dark:bg-indigo-900/20">
-            <div class="grid grid-cols-2 gap-1">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-              <input type="number" class="w-12 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700" placeholder="-" min="0" max="100">
-            </div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-center bg-gray-100 dark:bg-gray-600">
-            <div class="font-semibold text-gray-900 dark:text-gray-100">--</div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+<!-- Term-separated Gradebook Table Placeholder -->
+<div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-x-auto hide-scrollbar">
+  <table class="w-full min-w-[1800px]">
+    <thead>
+      <tr>
+        <th rowspan="3" class="px-6 py-3 text-left bg-white dark:bg-gray-800 sticky left-0 top-0 z-20">Students</th>
+        @foreach(['activities' => 'Activities', 'quizzes' => 'Quizzes', 'exams' => 'Exams', 'recitations' => 'Recitation', 'projects' => 'Projects'] as $type => $label)
+          <th colspan="{{ count($assessments[$type]['midterms']) + count($assessments[$type]['finals']) }}" class="px-6 py-3 text-center bg-white dark:bg-gray-800 sticky top-0 z-10">{{ $label }}</th>
+        @endforeach
+        <th rowspan="3" class="px-6 py-3 text-center bg-white dark:bg-gray-800 sticky top-0 z-10">Midterm Grade</th>
+        <th rowspan="3" class="px-6 py-3 text-center bg-white dark:bg-gray-800 sticky top-0 z-10">Finals Grade</th>
+        <th rowspan="3" class="px-6 py-3 text-center bg-white dark:bg-gray-800 sticky top-0 z-10">Overall Grade</th>
+      </tr>
+      <tr>
+        @foreach(['activities', 'quizzes', 'exams', 'recitations', 'projects'] as $type)
+          <th colspan="{{ count($assessments[$type]['midterms']) }}" class="px-4 py-2 text-center bg-white dark:bg-gray-800 sticky top-8 z-10">Midterm</th>
+          <th colspan="{{ count($assessments[$type]['finals']) }}" class="px-4 py-2 text-center bg-white dark:bg-gray-800 sticky top-8 z-10">Finals</th>
+        @endforeach
+      </tr>
+      <tr>
+        @foreach(['activities', 'quizzes', 'exams', 'recitations', 'projects'] as $type)
+          @foreach($assessments[$type]['midterms'] as $item)
+            <th class="px-4 py-2 text-center bg-white dark:bg-gray-800 sticky top-16 z-10">
+              <a href="{{ route($type.'.show', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, $type == 'activities' ? 'activity' : ($type == 'quizzes' ? 'quiz' : ($type == 'exams' ? 'exam' : ($type == 'recitations' ? 'recitation' : 'project')) ) => $item->id, 'term' => 'midterms']) }}"
+                 class="text-blue-600 dark:text-blue-400 hover:underline">
+                {{ $item->name }}
+              </a>
+            </th>
+          @endforeach
+          @foreach($assessments[$type]['finals'] as $item)
+            <th class="px-4 py-2 text-center bg-white dark:bg-gray-800 sticky top-16 z-10">
+              <a href="{{ route($type.'.show', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, $type == 'activities' ? 'activity' : ($type == 'quizzes' ? 'quiz' : ($type == 'exams' ? 'exam' : ($type == 'recitations' ? 'recitation' : 'project')) ) => $item->id, 'term' => 'finals']) }}"
+                 class="text-blue-600 dark:text-blue-400 hover:underline">
+                {{ $item->name }}
+              </a>
+            </th>
+          @endforeach
+        @endforeach
+      </tr>
+    </thead>
+    <tbody>
+      @foreach ($students as $student)
+      <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+        <td class="px-6 py-3 bg-white dark:bg-gray-800 sticky left-0 z-10">{{ $student->last_name }}, {{ $student->first_name }}</td>
+        @foreach(['activities', 'quizzes', 'exams', 'recitations', 'projects'] as $type)
+          {{-- Midterms --}}
+          @if(count($assessments[$type]['midterms']) > 0)
+            @foreach($assessments[$type]['midterms'] as $item)
+              <td class="px-4 py-3 text-center hover:bg-yellow-100 dark:hover:bg-yellow-900 transition-colors">
+                <?php $score = $item->scores->where('student_id', $student->id)->first(); ?>
+                {{ $score && $score->score !== null ? $score->score : '--' }}
+              </td>
+            @endforeach
+          @else
+            <td class="px-4 py-3 text-center hover:bg-yellow-100 dark:hover:bg-yellow-900 transition-colors">--</td>
+          @endif
+          {{-- Finals --}}
+          @if(count($assessments[$type]['finals']) > 0)
+            @foreach($assessments[$type]['finals'] as $item)
+              <td class="px-4 py-3 text-center hover:bg-yellow-100 dark:hover:bg-yellow-900 transition-colors">
+                <?php $score = $item->scores->where('student_id', $student->id)->first(); ?>
+                {{ $score && $score->score !== null ? $score->score : '--' }}
+              </td>
+            @endforeach
+          @else
+            <td class="px-4 py-3 text-center hover:bg-yellow-100 dark:hover:bg-yellow-900 transition-colors">--</td>
+          @endif
+        @endforeach
+        <td class="px-4 py-3 text-center font-semibold">{{ $student->midterms_grade !== null ? $student->midterms_grade.'%' : '--' }}</td>
+        <td class="px-4 py-3 text-center font-semibold">{{ $student->finals_grade !== null ? $student->finals_grade.'%' : '--' }}</td>
+        <td class="px-4 py-3 text-center font-semibold">{{ $student->overall_grade !== null ? $student->overall_grade.'%' : '--' }}</td>
+      </tr>
+      @endforeach
+    </tbody>
+  </table>
+</div>
+
+<!-- Legend and Weights Display -->
+<div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+      <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Grade Categories & Weights:</h4>
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-xs">
+        <div class="flex items-center gap-2">
+          <div class="w-4 h-4 bg-blue-100 dark:bg-blue-900/20 rounded"></div>
+          <span class="text-gray-700 dark:text-gray-300">Activities (<span id="weight-activities">{{ $gradingWeight ? $gradingWeight->activities : 20 }}%</span>)</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-4 h-4 bg-green-100 dark:bg-green-900/20 rounded"></div>
+          <span class="text-gray-700 dark:text-gray-300">Quizzes (<span id="weight-quizzes">{{ $gradingWeight ? $gradingWeight->quizzes : 20 }}%</span>)</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-4 h-4 bg-yellow-100 dark:bg-yellow-900/20 rounded"></div>
+          <span class="text-gray-700 dark:text-gray-300">Exams (<span id="weight-exams">{{ $gradingWeight ? $gradingWeight->exams : 30 }}%</span>)</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-4 h-4 bg-purple-100 dark:bg-purple-900/20 rounded"></div>
+          <span class="text-gray-700 dark:text-gray-300">Recitation (<span id="weight-recitation">{{ $gradingWeight ? $gradingWeight->recitation : 15 }}%</span>)</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-4 h-4 bg-indigo-100 dark:bg-indigo-900/20 rounded"></div>
+          <span class="text-gray-700 dark:text-gray-300">Projects (<span id="weight-projects">{{ $gradingWeight ? $gradingWeight->projects : 15 }}%</span>)</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <button type="button" class="px-4 py-2 bg-evsu hover:bg-evsuDark text-white font-medium rounded-lg transition-colors" onclick="document.getElementById('weights-modal').classList.remove('hidden')">
+        <i data-lucide="settings" class="w-4 h-4 inline"></i> Set Weights
+      </button>
+    </div>
   </div>
 </div>
 
-<!-- Legend -->
-<div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-  <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Grade Categories:</h4>
-  <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-xs">
-    <div class="flex items-center gap-2">
-      <div class="w-4 h-4 bg-blue-100 dark:bg-blue-900/20 rounded"></div>
-      <span class="text-gray-700 dark:text-gray-300">Activities (30%)</span>
-    </div>
-    <div class="flex items-center gap-2">
-      <div class="w-4 h-4 bg-green-100 dark:bg-green-900/20 rounded"></div>
-      <span class="text-gray-700 dark:text-gray-300">Quizzes (20%)</span>
-    </div>
-    <div class="flex items-center gap-2">
-      <div class="w-4 h-4 bg-yellow-100 dark:bg-yellow-900/20 rounded"></div>
-      <span class="text-gray-700 dark:text-gray-300">Exams (30%)</span>
-    </div>
-    <div class="flex items-center gap-2">
-      <div class="w-4 h-4 bg-purple-100 dark:bg-purple-900/20 rounded"></div>
-      <span class="text-gray-700 dark:text-gray-300">Recitation (10%)</span>
-    </div>
-    <div class="flex items-center gap-2">
-      <div class="w-4 h-4 bg-indigo-100 dark:bg-indigo-900/20 rounded"></div>
-      <span class="text-gray-700 dark:text-gray-300">Projects (10%)</span>
-    </div>
+<!-- Weights Modal -->
+<div id="weights-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md p-6 relative">
+    <button class="absolute top-2 right-2 text-gray-400 hover:text-gray-700" onclick="document.getElementById('weights-modal').classList.add('hidden')">
+      <i data-lucide="x" class="w-5 h-5"></i>
+    </button>
+    <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Set Assessment Weights</h3>
+    <form id="weights-form" method="POST" action="{{ route('grading.weights.update', $classSection->subject->id) }}">
+      @csrf
+      <div class="space-y-3">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Activities (%)</label>
+          <input type="number" name="activities" min="0" max="100" class="mt-1 block w-full rounded border-gray-300 dark:bg-gray-700 dark:text-gray-100" value="{{ $gradingWeight ? $gradingWeight->activities : 20 }}" required>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Quizzes (%)</label>
+          <input type="number" name="quizzes" min="0" max="100" class="mt-1 block w-full rounded border-gray-300 dark:bg-gray-700 dark:text-gray-100" value="{{ $gradingWeight ? $gradingWeight->quizzes : 20 }}" required>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Exams (%)</label>
+          <input type="number" name="exams" min="0" max="100" class="mt-1 block w-full rounded border-gray-300 dark:bg-gray-700 dark:text-gray-100" value="{{ $gradingWeight ? $gradingWeight->exams : 30 }}" required>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Recitation (%)</label>
+          <input type="number" name="recitation" min="0" max="100" class="mt-1 block w-full rounded border-gray-300 dark:bg-gray-700 dark:text-gray-100" value="{{ $gradingWeight ? $gradingWeight->recitation : 15 }}" required>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Projects (%)</label>
+          <input type="number" name="projects" min="0" max="100" class="mt-1 block w-full rounded border-gray-300 dark:bg-gray-700 dark:text-gray-100" value="{{ $gradingWeight ? $gradingWeight->projects : 15 }}" required>
+        </div>
+      </div>
+      <div class="mt-4 flex items-center justify-between">
+        <span id="weights-error" class="text-red-600 text-sm hidden">Total must be 100%</span>
+        <button type="submit" class="px-4 py-2 bg-evsu hover:bg-evsuDark text-white font-medium rounded-lg transition-colors">Save</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -255,6 +217,25 @@ document.querySelectorAll('input[type="number"]').forEach(input => {
 function calculateFinalGrades() {
   // Placeholder for grade calculation logic
   console.log('Calculating final grades...');
+}
+
+// Modal validation for weights
+const weightsForm = document.getElementById('weights-form');
+if (weightsForm) {
+  weightsForm.addEventListener('submit', function(e) {
+    const total =
+      parseInt(weightsForm.activities.value) +
+      parseInt(weightsForm.quizzes.value) +
+      parseInt(weightsForm.exams.value) +
+      parseInt(weightsForm.recitation.value) +
+      parseInt(weightsForm.projects.value);
+    if (total !== 100) {
+      document.getElementById('weights-error').classList.remove('hidden');
+      e.preventDefault();
+    } else {
+      document.getElementById('weights-error').classList.add('hidden');
+    }
+  });
 }
 </script>
 @endsection 

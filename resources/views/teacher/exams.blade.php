@@ -133,7 +133,7 @@
     </li>
     <li class="flex items-center">
       <i data-lucide="chevron-right" class="w-3 h-3 sm:w-4 sm:h-4 mx-1 sm:mx-2 flex-shrink-0"></i>
-      <a href="{{ route('grading.system', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id]) }}" class="hover:text-evsu dark:hover:text-evsu transition-colors whitespace-nowrap">
+      <a href="{{ route('grading.system', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'term' => $term]) }}" class="hover:text-evsu dark:hover:text-evsu transition-colors whitespace-nowrap">
         {{ $classSection->section }}
       </a>
     </li>
@@ -143,6 +143,28 @@
     </li>
   </ol>
 </nav>
+
+<!-- Term Switcher Tabs -->
+<div class="mb-6 flex gap-2 term-switcher">
+    @php
+        $termTabs = [
+            'midterms' => 'Midterms',
+            'finals' => 'Finals',
+        ];
+        $currentRoute = Route::currentRouteName();
+        $routeParams = array_merge(request()->route()->parameters(), []);
+    @endphp
+    @foreach ($termTabs as $slug => $label)
+        @php
+            $params = array_merge($routeParams, ['term' => $slug]);
+        @endphp
+        <a href="{{ route($currentRoute, $params) }}"
+           class="px-4 py-2 rounded-t-lg font-semibold transition-colors duration-150
+                  {{ $term === $slug ? 'bg-evsu text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-evsu hover:text-white' }}">
+            {{ $label }}
+        </a>
+    @endforeach
+</div>
 
 @if (session('success'))
   <div id="successMessage" class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg transform transition-all duration-500 ease-out">
@@ -206,7 +228,7 @@
     <div class="flex flex-wrap gap-2 border-b border-gray-200 dark:border-gray-700">
       @foreach($exams as $exam)
         <div class="px-0 py-0 text-sm font-medium rounded-t-lg transition-all duration-200 flex items-center group {{ $selectedExam && $selectedExam->id === $exam->id ? 'bg-evsu text-white' : 'text-gray-600 dark:text-gray-400 hover:text-evsu dark:hover:text-evsu hover:bg-gray-100 dark:hover:bg-gray-700' }}">
-          <a href="{{ route('exams.show', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'exam' => $exam->id]) }}" class="flex-1 px-4 py-2 flex items-center min-w-0">
+          <a href="{{ route('exams.show', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'exam' => $exam->id, 'term' => $term]) }}" class="flex-1 px-4 py-2 flex items-center min-w-0">
             <span class="truncate">{{ $exam->name }}</span>
           </a>
         </div>
@@ -244,7 +266,7 @@
           </button>
           <form id="delete-exam-form-{{ $selectedExam->id }}"
                 method="POST"
-                action="{{ route('exams.destroy', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'exam' => $selectedExam->id]) }}"
+                action="{{ route('exams.destroy', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'exam' => $selectedExam->id, 'term' => $term]) }}"
                 style="display: none;">
             @csrf
             @method('DELETE')
@@ -255,7 +277,7 @@
 
     <!-- Grading Sheet Table -->
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
-      <form method="POST" action="{{ route('exams.scores.save', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'exam' => $selectedExam->id]) }}" id="scoresForm">
+      <form method="POST" action="{{ route('exams.scores.save', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'exam' => $selectedExam->id, 'term' => $term]) }}" id="scoresForm">
         @csrf
         <div class="overflow-x-auto">
           <table class="w-full">
@@ -331,7 +353,7 @@
     </div>
 
     <!-- Modal Body -->
-    <form method="POST" action="{{ route('exams.store', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id]) }}" class="p-6">
+    <form method="POST" action="{{ route('exams.store', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'term' => $term]) }}" class="p-6">
       @csrf
       <div class="space-y-4">
         <!-- Exam Name -->
@@ -394,7 +416,7 @@
     </div>
 
     <!-- Modal Body -->
-    <form method="POST" action="{{ $selectedExam ? route('exams.update', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'exam' => $selectedExam->id]) : '#' }}" class="p-6">
+    <form method="POST" action="{{ $selectedExam ? route('exams.update', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'exam' => $selectedExam->id, 'term' => $term]) : '#' }}" class="p-6">
       @csrf
       @method('PUT')
       <div class="space-y-4">
