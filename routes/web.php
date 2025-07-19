@@ -64,10 +64,40 @@ Route::post('/register', function (Request $request) {
 
 // Dashboard (protected)
 Route::get('/dashboard', function () {
-    if (auth()->user()->isAdmin()) {
+    $user = auth()->user();
+    if ($user->isAdmin()) {
         return view('admin.dashboard');
     }
-    return view('teacher.dashboard');
+    if ($user->isTeacher()) {
+        // Get all subjects for this teacher
+        $subjects = $user->subjects()->with(['classes.students'])->get();
+        $subjectIds = $subjects->pluck('id');
+        $classSections = \App\Models\ClassSection::whereIn('subject_id', $subjectIds)->get();
+        $classSectionIds = $classSections->pluck('id');
+        // Count unique students across all class sections
+        $studentIds = \App\Models\Student::whereHas('classSections', function($q) use ($classSectionIds) {
+            $q->whereIn('class_section_id', $classSectionIds);
+        })->pluck('id')->unique();
+        $totalStudents = $studentIds->count();
+        $totalSubjects = $subjects->count();
+        $totalClassSections = $classSections->count();
+        $totalActivities = \App\Models\Activity::whereIn('subject_id', $subjectIds)->count();
+        $totalQuizzes = \App\Models\Quiz::whereIn('subject_id', $subjectIds)->count();
+        $totalExams = \App\Models\Exam::whereIn('subject_id', $subjectIds)->count();
+        $totalProjects = \App\Models\Project::whereIn('subject_id', $subjectIds)->count();
+        $totalRecitations = \App\Models\Recitation::whereIn('subject_id', $subjectIds)->count();
+        return view('teacher.dashboard', compact(
+            'totalStudents',
+            'totalSubjects',
+            'totalClassSections',
+            'totalActivities',
+            'totalQuizzes',
+            'totalExams',
+            'totalProjects',
+            'totalRecitations',
+        ));
+    }
+    return view('dashboard');
 })->middleware('auth')->name('dashboard');
 
 // Logout
