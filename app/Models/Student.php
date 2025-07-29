@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class Student extends Model
 {
@@ -29,7 +30,8 @@ class Student extends Model
     {
         return $this->belongsToMany(ClassSection::class, 'class_section_student')
                     ->withPivot('enrollment_date', 'status')
-                    ->withTimestamps();
+                    ->withTimestamps()
+                    ->using(ClassSectionStudent::class);
     }
 
     public function getFullNameAttribute()
@@ -41,4 +43,11 @@ class Student extends Model
     {
         return $this->student_id . ' - ' . $this->full_name;
     }
+}
+
+class ClassSectionStudent extends Pivot
+{
+    protected $casts = [
+        'enrollment_date' => 'datetime',
+    ];
 }

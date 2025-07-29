@@ -144,6 +144,12 @@
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
               <div class="flex items-center gap-x-2 justify-center">
+                <a href="{{ route('students.show', $student->id) }}"
+                   class="px-3 py-1.5 bg-evsu hover:bg-evsuDark text-white font-semibold rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-evsu focus:ring-offset-2 transition-colors"
+                   type="button"
+                >
+                  View Profile
+                </a>
                 <button
                   onclick="openEditStudentModal('{{ $student->id }}', '{{ $student->student_id }}', '{{ $student->first_name }}', '{{ $student->last_name }}', '{{ $student->email }}', '{{ $student->middle_name ?? '' }}', '{{ $student->birth_date ?? '' }}', '{{ $student->gender ?? '' }}', '{{ $student->contact_number ?? '' }}', '{{ $student->address ?? '' }}')"
                   class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition-colors"

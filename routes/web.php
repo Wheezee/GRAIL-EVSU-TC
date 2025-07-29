@@ -86,6 +86,44 @@ Route::get('/dashboard', function () {
         $totalExams = \App\Models\Exam::whereIn('subject_id', $subjectIds)->count();
         $totalProjects = \App\Models\Project::whereIn('subject_id', $subjectIds)->count();
         $totalRecitations = \App\Models\Recitation::whereIn('subject_id', $subjectIds)->count();
+        
+        // Latest created items
+        $latestActivities = \App\Models\Activity::whereIn('subject_id', $subjectIds)->with('subject')->orderByDesc('created_at')->limit(3)->get();
+        $latestQuizzes = \App\Models\Quiz::whereIn('subject_id', $subjectIds)->with('subject')->orderByDesc('created_at')->limit(3)->get();
+        $latestExams = \App\Models\Exam::whereIn('subject_id', $subjectIds)->with('subject')->orderByDesc('created_at')->limit(3)->get();
+        $latestRecitations = \App\Models\Recitation::whereIn('subject_id', $subjectIds)->with('subject')->orderByDesc('created_at')->limit(3)->get();
+        $latestProjects = \App\Models\Project::whereIn('subject_id', $subjectIds)->with('subject')->orderByDesc('created_at')->limit(3)->get();
+
+        // Upcoming items (due_date in future, any type)
+        $now = now();
+        $upcomingActivities = \App\Models\Activity::whereIn('subject_id', $subjectIds)->where('due_date', '>', $now)->count();
+        $upcomingQuizzes = \App\Models\Quiz::whereIn('subject_id', $subjectIds)->where('due_date', '>', $now)->count();
+        $upcomingExams = \App\Models\Exam::whereIn('subject_id', $subjectIds)->where('due_date', '>', $now)->count();
+        $upcomingProjects = \App\Models\Project::whereIn('subject_id', $subjectIds)->where('due_date', '>', $now)->count();
+        $upcomingRecitations = \App\Models\Recitation::whereIn('subject_id', $subjectIds)->where('due_date', '>', $now)->count();
+        $totalUpcoming = $upcomingActivities + $upcomingQuizzes + $upcomingExams + $upcomingProjects + $upcomingRecitations;
+
+        // Total graded submissions (all types)
+        $gradedActivities = \App\Models\ActivityScore::whereHas('activity', function($q) use ($subjectIds) { $q->whereIn('subject_id', $subjectIds); })->count();
+        $gradedQuizzes = \App\Models\QuizScore::whereHas('quiz', function($q) use ($subjectIds) { $q->whereIn('subject_id', $subjectIds); })->count();
+        $gradedExams = \App\Models\ExamScore::whereHas('exam', function($q) use ($subjectIds) { $q->whereIn('subject_id', $subjectIds); })->count();
+        $gradedProjects = \App\Models\ProjectScore::whereHas('project', function($q) use ($subjectIds) { $q->whereIn('subject_id', $subjectIds); })->count();
+        $gradedRecitations = \App\Models\RecitationScore::whereHas('recitation', function($q) use ($subjectIds) { $q->whereIn('subject_id', $subjectIds); })->count();
+        $totalGraded = $gradedActivities + $gradedQuizzes + $gradedExams + $gradedProjects + $gradedRecitations;
+
+        // Pending grading: items with at least one student but no score yet
+        $pendingActivities = \App\Models\Activity::whereIn('subject_id', $subjectIds)
+            ->whereDoesntHave('scores')->count();
+        $pendingQuizzes = \App\Models\Quiz::whereIn('subject_id', $subjectIds)
+            ->whereDoesntHave('scores')->count();
+        $pendingExams = \App\Models\Exam::whereIn('subject_id', $subjectIds)
+            ->whereDoesntHave('scores')->count();
+        $pendingProjects = \App\Models\Project::whereIn('subject_id', $subjectIds)
+            ->whereDoesntHave('scores')->count();
+        $pendingRecitations = \App\Models\Recitation::whereIn('subject_id', $subjectIds)
+            ->whereDoesntHave('scores')->count();
+        $totalPending = $pendingActivities + $pendingQuizzes + $pendingExams + $pendingProjects + $pendingRecitations;
+
         return view('teacher.dashboard', compact(
             'totalStudents',
             'totalSubjects',
@@ -95,6 +133,14 @@ Route::get('/dashboard', function () {
             'totalExams',
             'totalProjects',
             'totalRecitations',
+            'latestActivities',
+            'latestQuizzes',
+            'latestExams',
+            'latestRecitations',
+            'latestProjects',
+            'totalUpcoming',
+            'totalGraded',
+            'totalPending',
         ));
     }
     return view('dashboard');
@@ -635,6 +681,7 @@ Route::get('/subjects/{subject}/classes/{classSection}/{term}/gradebook', functi
 
 // Student management routes
 Route::get('/students', [\App\Http\Controllers\StudentController::class, 'index'])->name('students.index')->middleware('auth');
+Route::get('/students/{student}', [\App\Http\Controllers\StudentController::class, 'show'])->name('students.show')->middleware('auth');
 Route::post('/students', [\App\Http\Controllers\StudentController::class, 'store'])->name('students.store')->middleware('auth');
 Route::put('/students/{student}', [\App\Http\Controllers\StudentController::class, 'update'])->name('students.update')->middleware('auth');
 Route::delete('/students/{student}', [\App\Http\Controllers\StudentController::class, 'destroy'])->name('students.destroy')->middleware('auth');
@@ -682,6 +729,18 @@ Route::post('/subjects/{subject}/classes/{classSection}/{term}/projects', [\App\
 Route::put('/subjects/{subject}/classes/{classSection}/{term}/projects/{project}', [\App\Http\Controllers\ProjectController::class, 'update'])->name('projects.update')->middleware('auth');
 Route::post('/subjects/{subject}/classes/{classSection}/{term}/projects/{project}/scores', [\App\Http\Controllers\ProjectController::class, 'saveScores'])->name('projects.scores.save')->middleware('auth');
 Route::delete('/subjects/{subject}/classes/{classSection}/{term}/projects/{project}', [\App\Http\Controllers\ProjectController::class, 'destroy'])->name('projects.destroy')->middleware('auth');
+
+// API route for class selector
+Route::get('/api/subjects/{subjectId}/classes', function ($subjectId) {
+    if (!auth()->user()->isTeacher()) {
+        abort(403, 'Access denied. Teachers only.');
+    }
+    
+    $subject = auth()->user()->subjects()->findOrFail($subjectId);
+    $classes = $subject->classes()->select('id', 'section', 'schedule', 'student_count')->get();
+    
+    return response()->json($classes);
+})->middleware('auth');
 
 // Grading weights update
 Route::post('/subjects/{subject}/grading-weights', [GradingWeightController::class, 'update'])->name('grading.weights.update')->middleware('auth');

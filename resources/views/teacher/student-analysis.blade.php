@@ -1,6 +1,39 @@
 @extends('layouts.app')
 
 @section('content')
+<!-- Breadcrumbs -->
+<nav class="mb-6" aria-label="Breadcrumb">
+  <ol class="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+    <li class="flex items-center">
+      <a href="{{ route('dashboard') }}" class="hover:text-evsu dark:hover:text-evsu transition-colors whitespace-nowrap">
+        Home
+      </a>
+    </li>
+    <li class="flex items-center">
+      <i data-lucide="chevron-right" class="w-3 h-3 sm:w-4 sm:h-4 mx-1 sm:mx-2 flex-shrink-0"></i>
+      <a href="{{ route('subjects.index') }}" class="hover:text-evsu dark:hover:text-evsu transition-colors whitespace-nowrap">
+        Subjects
+      </a>
+    </li>
+    <li class="flex items-center">
+      <i data-lucide="chevron-right" class="w-3 h-3 sm:w-4 sm:h-4 mx-1 sm:mx-2 flex-shrink-0"></i>
+      <a href="{{ route('subjects.classes', $subject->id) }}" class="hover:text-evsu dark:hover:text-evsu transition-colors max-w-[120px] sm:max-w-none truncate">
+        {{ $subject->code }} - {{ $subject->title }}
+      </a>
+    </li>
+    <li class="flex items-center">
+      <i data-lucide="chevron-right" class="w-3 h-3 sm:w-4 sm:h-4 mx-1 sm:mx-2 flex-shrink-0"></i>
+      <a href="{{ route('grading.system', ['subject' => $subject->id, 'classSection' => $classSection->id, 'term' => 'midterms']) }}" class="hover:text-evsu dark:hover:text-evsu transition-colors whitespace-nowrap">
+        {{ $classSection->section }}
+      </a>
+    </li>
+    <li class="flex items-center">
+      <i data-lucide="chevron-right" class="w-3 h-3 sm:w-4 sm:h-4 mx-1 sm:mx-2 flex-shrink-0"></i>
+      <span class="text-gray-900 dark:text-gray-100 font-medium whitespace-nowrap">{{ $student->full_name }} Analysis</span>
+    </li>
+  </ol>
+</nav>
+
 <div class="max-w-4xl mx-auto py-8">
     <h1 class="text-2xl font-bold mb-2">{{ $student->full_name }} <span class="text-gray-500">({{ $student->student_id }})</span></h1>
     <p class="mb-4 text-gray-600">Email: <a href="mailto:{{ $student->email }}" class="underline">{{ $student->email }}</a></p>

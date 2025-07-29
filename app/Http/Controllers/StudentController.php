@@ -22,6 +22,94 @@ class StudentController extends Controller
         return view('teacher.students.index', compact('students'));
     }
 
+    public function show(Student $student)
+    {
+        if (!auth()->user()->isTeacher()) {
+            abort(403, 'Access denied. Teachers only.');
+        }
+
+        // Get enrolled class sections with subjects
+        $enrolledClasses = $student->classSections()
+            ->with(['subject', 'teacher'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Calculate age if birth date is available
+        $age = null;
+        if ($student->birth_date) {
+            $age = $student->birth_date->diffInYears(now());
+        }
+
+        // Get academic performance data for each enrolled class
+        $academicData = [];
+        foreach ($enrolledClasses as $classSection) {
+            $subject = $classSection->subject;
+            
+            // Get all assessment types for this subject
+            $activities = $subject->activities()->with('scores')->get();
+            $quizzes = $subject->quizzes()->with('scores')->get();
+            $exams = $subject->exams()->with('scores')->get();
+            $projects = $subject->projects()->with('scores')->get();
+            $recitations = $subject->recitations()->with('scores')->get();
+
+            // Get student's scores
+            $activityScores = $activities->flatMap(function($activity) use ($student) {
+                return $activity->scores()->where('student_id', $student->id)->get();
+            });
+            $quizScores = $quizzes->flatMap(function($quiz) use ($student) {
+                return $quiz->scores()->where('student_id', $student->id)->get();
+            });
+            $examScores = $exams->flatMap(function($exam) use ($student) {
+                return $exam->scores()->where('student_id', $student->id)->get();
+            });
+            $projectScores = $projects->flatMap(function($project) use ($student) {
+                return $project->scores()->where('student_id', $student->id)->get();
+            });
+            $recitationScores = $recitations->flatMap(function($recitation) use ($student) {
+                return $recitation->scores()->where('student_id', $student->id)->get();
+            });
+
+            // Calculate averages
+            $activityAvg = $activityScores->count() > 0 ? $activityScores->avg('score') : null;
+            $quizAvg = $quizScores->count() > 0 ? $quizScores->avg('score') : null;
+            $examAvg = $examScores->count() > 0 ? $examScores->avg('score') : null;
+            $projectAvg = $projectScores->count() > 0 ? $projectScores->avg('score') : null;
+            $recitationAvg = $recitationScores->count() > 0 ? $recitationScores->avg('score') : null;
+
+            $academicData[$classSection->id] = [
+                'subject' => $subject,
+                'classSection' => $classSection,
+                'activities' => [
+                    'count' => $activities->count(),
+                    'scores' => $activityScores,
+                    'average' => $activityAvg,
+                ],
+                'quizzes' => [
+                    'count' => $quizzes->count(),
+                    'scores' => $quizScores,
+                    'average' => $quizAvg,
+                ],
+                'exams' => [
+                    'count' => $exams->count(),
+                    'scores' => $examScores,
+                    'average' => $examAvg,
+                ],
+                'projects' => [
+                    'count' => $projects->count(),
+                    'scores' => $projectScores,
+                    'average' => $projectAvg,
+                ],
+                'recitations' => [
+                    'count' => $recitations->count(),
+                    'scores' => $recitationScores,
+                    'average' => $recitationAvg,
+                ],
+            ];
+        }
+
+        return view('teacher.students.show', compact('student', 'enrolledClasses', 'age', 'academicData'));
+    }
+
     public function store(Request $request)
     {
         if (!auth()->user()->isTeacher()) {
