@@ -184,4 +184,209 @@ class StudentController extends Controller
 
         return response()->json($availableStudents);
     }
+
+    public function analysis($subjectId, $classSectionId, \App\Models\Student $student)
+    {
+        $subject = \App\Models\Subject::findOrFail($subjectId);
+        $classSection = \App\Models\ClassSection::findOrFail($classSectionId);
+
+        $activities = $subject->activities;
+        $quizzes = $subject->quizzes;
+        $exams = $subject->exams;
+        $projects = $subject->projects;
+        $recitations = $subject->recitations;
+
+        $activityScores = \App\Models\ActivityScore::where('student_id', $student->id)
+            ->whereIn('activity_id', $activities->pluck('id'))
+            ->get()->keyBy('activity_id');
+        $quizScores = \App\Models\QuizScore::where('student_id', $student->id)
+            ->whereIn('quiz_id', $quizzes->pluck('id'))
+            ->get()->keyBy('quiz_id');
+        $examScores = \App\Models\ExamScore::where('student_id', $student->id)
+            ->whereIn('exam_id', $exams->pluck('id'))
+            ->get()->keyBy('exam_id');
+        $projectScores = \App\Models\ProjectScore::where('student_id', $student->id)
+            ->whereIn('project_id', $projects->pluck('id'))
+            ->get()->keyBy('project_id');
+        $recitationScores = \App\Models\RecitationScore::where('student_id', $student->id)
+            ->whereIn('recitation_id', $recitations->pluck('id'))
+            ->get()->keyBy('recitation_id');
+
+        // --- Risk assessment logic (copied from web.php grading route) ---
+        $activityAvgPct = 0;
+        if ($activityScores->count() > 0) {
+            $totalScore = $activityScores->sum('score');
+            $totalMaxScore = $activityScores->sum(function($score) { return $score->activity->max_score; });
+            $activityAvgPct = $totalMaxScore > 0 ? ($totalScore / $totalMaxScore) * 100 : 0;
+        }
+        $quizAvgPct = 0;
+        if ($quizScores->count() > 0) {
+            $totalScore = $quizScores->sum('score');
+            $totalMaxScore = $quizScores->sum(function($score) { return $score->quiz->max_score; });
+            $quizAvgPct = $totalMaxScore > 0 ? ($totalScore / $totalMaxScore) * 100 : 0;
+        }
+        $examScorePct = 0;
+        if ($examScores->count() > 0) {
+            $totalScore = $examScores->sum('score');
+            $totalMaxScore = $examScores->sum(function($score) { return $score->exam->max_score; });
+            $examScorePct = $totalMaxScore > 0 ? ($totalScore / $totalMaxScore) * 100 : 0;
+        }
+        $projectScorePct = 0;
+        if ($projectScores->count() > 0) {
+            $totalScore = $projectScores->sum('score');
+            $totalMaxScore = $projectScores->sum(function($score) { return $score->project->max_score; });
+            $projectScorePct = $totalMaxScore > 0 ? ($totalScore / $totalMaxScore) * 100 : 0;
+        }
+        $recitationScorePct = 0;
+        if ($recitationScores->count() > 0) {
+            $totalScore = $recitationScores->sum('score');
+            $totalMaxScore = $recitationScores->sum(function($score) { return $score->recitation->max_score; });
+            $recitationScorePct = $totalMaxScore > 0 ? ($totalScore / $totalMaxScore) * 100 : 0;
+        }
+        // Missed and Late Submission Percentage (all types)
+        $totalItems = 0;
+        $missedCount = 0;
+        $lateCount = 0;
+        // Activities
+        foreach ($activities as $activity) {
+            $score = $activityScores->get($activity->id);
+            $totalItems++;
+            if (!$score || $score->score === null || $score->score == 0) {
+                $missedCount++;
+            }
+            if ($score && isset($score->is_late) && $score->is_late) {
+                $lateCount++;
+            }
+        }
+        // Quizzes
+        foreach ($quizzes as $quiz) {
+            $score = $quizScores->get($quiz->id);
+            $totalItems++;
+            if (!$score || $score->score === null || $score->score == 0) {
+                $missedCount++;
+            }
+            if ($score && isset($score->is_late) && $score->is_late) {
+                $lateCount++;
+            }
+        }
+        // Exams
+        foreach ($exams as $exam) {
+            $score = $examScores->get($exam->id);
+            $totalItems++;
+            if (!$score || $score->score === null || $score->score == 0) {
+                $missedCount++;
+            }
+            if ($score && isset($score->is_late) && $score->is_late) {
+                $lateCount++;
+            }
+        }
+        // Projects
+        foreach ($projects as $project) {
+            $score = $projectScores->get($project->id);
+            $totalItems++;
+            if (!$score || $score->score === null || $score->score == 0) {
+                $missedCount++;
+            }
+            if ($score && isset($score->is_late) && $score->is_late) {
+                $lateCount++;
+            }
+        }
+        $missedSubmissionPct = $totalItems > 0 ? ($missedCount / $totalItems) * 100 : 0;
+        $lateSubmissionPct = $totalItems > 0 ? ($lateCount / $totalItems) * 100 : 0;
+        // Resubmission Percentage (projects only)
+        $resubmittedProjects = 0;
+        foreach ($projects as $project) {
+            $score = $projectScores->get($project->id);
+            if ($score && isset($score->resubmission_count) && $score->resubmission_count > 0) {
+                $resubmittedProjects++;
+            }
+        }
+        $resubmissionPct = $projects->count() > 0 ? ($resubmittedProjects / $projects->count()) * 100 : 0;
+        // Variation Score Percentage
+        $variationScorePct = 0;
+        $scores = [$examScorePct, $activityAvgPct, $quizAvgPct, $projectScorePct, $recitationScorePct];
+        $validScores = array_filter($scores, function($score) { return $score > 0; });
+        if (count($validScores) > 1) {
+            $mean = array_sum($validScores) / count($validScores);
+            $variance = array_sum(array_map(function($score) use ($mean) { return pow($score - $mean, 2); }, $validScores)) / count($validScores);
+            $standardDeviation = sqrt($variance);
+            $variationScorePct = min(100, ($standardDeviation / 20) * 100);
+        }
+        // Set on student for API
+        $student->activity_avg_pct = round($activityAvgPct, 1);
+        $student->quiz_avg_pct = round($quizAvgPct, 1);
+        $student->exam_score_pct = round($examScorePct, 1);
+        $student->late_submission_pct = round($lateSubmissionPct, 1);
+        $student->missed_submission_pct = round($missedSubmissionPct, 1);
+        $student->resubmission_pct = round($resubmissionPct, 1);
+        $student->recitation_score_pct = round($recitationScorePct, 1);
+        $student->project_score_pct = round($projectScorePct, 1);
+        $student->variation_score_pct = round($variationScorePct, 1);
+        // --- Call GRAIL API or fallback ---
+        $riskPredictions = [];
+        try {
+            $response = null;
+            try {
+                $response = \Http::timeout(0.3)->post('http://127.0.0.1:5000/api/predict', [
+                    'exam_score_pct' => $student->exam_score_pct,
+                    'missed_submission_pct' => $student->missed_submission_pct,
+                    'late_submission_pct' => $student->late_submission_pct,
+                    'resubmission_pct' => $student->resubmission_pct,
+                    'variation_score_pct' => $student->variation_score_pct,
+                    'activity_avg_pct' => $student->activity_avg_pct,
+                    'quiz_avg_pct' => $student->quiz_avg_pct,
+                    'project_score_pct' => $student->project_score_pct,
+                    'recitation_score_pct' => $student->recitation_score_pct,
+                ]);
+            } catch (\Exception $e) {
+                $response = \Http::timeout(10)->post('https://buratizer127.pythonanywhere.com/api/predict', [
+                    'exam_score_pct' => $student->exam_score_pct,
+                    'missed_submission_pct' => $student->missed_submission_pct,
+                    'late_submission_pct' => $student->late_submission_pct,
+                    'resubmission_pct' => $student->resubmission_pct,
+                    'variation_score_pct' => $student->variation_score_pct,
+                    'activity_avg_pct' => $student->activity_avg_pct,
+                    'quiz_avg_pct' => $student->quiz_avg_pct,
+                    'project_score_pct' => $student->project_score_pct,
+                    'recitation_score_pct' => $student->recitation_score_pct,
+                ]);
+            }
+            if ($response && $response->successful()) {
+                $data = $response->json();
+                if ($data['success']) {
+                    $riskPredictions = $data['data']['risk_categories'] ?? [];
+                }
+            }
+        } catch (\Exception $e) {
+            // fallback
+            $riskPredictions = [];
+        }
+        $student->risk_predictions = $riskPredictions;
+        $remarks = $student->risk_predictions ?? [];
+        // --- end risk assessment logic ---
+
+        // Check if student has any real scores
+        $hasAnyScore = false;
+        foreach ([$activityScores, $quizScores, $examScores, $projectScores, $recitationScores] as $scoreSet) {
+            if ($scoreSet->count() > 0 && $scoreSet->sum('score') > 0) {
+                $hasAnyScore = true;
+                break;
+            }
+        }
+        if (!$hasAnyScore) {
+            $riskLevel = 'No Data';
+            $remarks = ['Lacking data to make a general status'];
+            return view('teacher.student-analysis', compact(
+                'student', 'classSection', 'subject',
+                'activities', 'quizzes', 'exams', 'projects', 'recitations', 'remarks',
+                'activityScores', 'quizScores', 'examScores', 'projectScores', 'recitationScores', 'riskLevel'
+            ));
+        }
+
+        return view('teacher.student-analysis', compact(
+            'student', 'classSection', 'subject',
+            'activities', 'quizzes', 'exams', 'projects', 'recitations', 'remarks',
+            'activityScores', 'quizScores', 'examScores', 'projectScores', 'recitationScores'
+        ));
+    }
 }

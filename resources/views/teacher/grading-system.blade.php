@@ -261,56 +261,83 @@
         </thead>
         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
           @forelse($enrolledStudents as $student)
+            @php
+              $risks = $student->risk_predictions;
+              // Check if student has any real scores
+              $hasAnyScore = false;
+              foreach ([
+                $student->activity_avg_pct ?? 0,
+                $student->quiz_avg_pct ?? 0,
+                $student->exam_score_pct ?? 0,
+                $student->project_score_pct ?? 0,
+                $student->recitation_score_pct ?? 0
+              ] as $score) {
+                if ($score > 0) {
+                  $hasAnyScore = true;
+                  break;
+                }
+              }
+              if (!$hasAnyScore) {
+                $riskLevel = 'Lacking Info';
+              } else if (count($risks) === 1 && $risks[0] === 'Not At Risk') {
+                  $riskLevel = 'Not At Risk';
+              } elseif (in_array('At Risk', $risks)) {
+                  $riskLevel = 'High Risk';
+              } else {
+                  $riskLevel = 'Low Risk';
+              }
+
+              // Filter out general categories for separate display
+              $riskCauses = array_filter($risks, function($r) use ($riskLevel) {
+                  if ($r === 'Not At Risk') return false;
+                  if ($r === 'At Risk') return false;
+                  return true;
+              });
+            @endphp
             <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                 <div class="flex items-center gap-2">
                   {{ $student->student_id }}
                 </div>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $student->full_name }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm {{ $riskLevel === 'High Risk' ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-100' }}">
+                <a href="{{ route('students.analysis', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, 'student' => $student->id]) }}" class="underline hover:text-blue-700">
+                  {{ $student->full_name }}
+                </a>
+              </td>
               <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100 text-center">
-                @php
-                  $risks = $student->risk_predictions;
-
-                  if (count($risks) === 1 && $risks[0] === 'Not At Risk') {
-                      $riskLevel = 'Not At Risk';
-                  } elseif (in_array('At Risk', $risks)) {
-                      $riskLevel = 'High Risk';
-                  } else {
-                      $riskLevel = 'Low Risk';
-                  }
-
-                  // Filter out general categories for separate display
-                  $riskCauses = array_filter($risks, function($r) use ($riskLevel) {
-                      if ($r === 'Not At Risk') return false;
-                      if ($r === 'At Risk') return false;
-                      return true;
-                  });
-                @endphp
-
                 <div class="flex flex-wrap gap-1 justify-center">
-                  <!-- Summary Label -->
-                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                    {{ $riskLevel === 'Not At Risk' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300' :
-                       ($riskLevel === 'Low Risk' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300' :
-                       'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300') }}">
-                    @if($riskLevel === 'Not At Risk')
-                      <i data-lucide="check-circle" class="w-3 h-3 mr-1"></i>
-                    @elseif($riskLevel === 'Low Risk')
-                      <i data-lucide="alert-circle" class="w-3 h-3 mr-1"></i>
-                    @else
-                      <i data-lucide="alert-triangle" class="w-3 h-3 mr-1"></i>
-                    @endif
-                    {{ $riskLevel }}
-                  </span>
-
-                  <!-- Detailed Labels -->
-                  @foreach($riskCauses as $cause)
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300">
-                      {{ $cause }}
+                  @if($riskLevel === 'Lacking Info')
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300" title="There is not enough information to make a risk assessment for this student yet.">
+                      <i data-lucide="info" class="w-3 h-3 mr-1"></i> Lacking information to make an assumption
                     </span>
-                  @endforeach
+                  @else
+                    <!-- Summary Label -->
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                      {{ $riskLevel === 'Not At Risk' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300' :
+                         ($riskLevel === 'Low Risk' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300' :
+                         'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300') }}">
+                      @if($riskLevel === 'Not At Risk')
+                        <i data-lucide="check-circle" class="w-3 h-3 mr-1"></i>
+                      @elseif($riskLevel === 'Low Risk')
+                        <i data-lucide="alert-circle" class="w-3 h-3 mr-1"></i>
+                      @else
+                        <i data-lucide="alert-triangle" class="w-3 h-3 mr-1"></i>
+                      @endif
+                      {{ $riskLevel }}
+                    </span>
+
+                    <!-- Detailed Labels -->
+                    @foreach($riskCauses as $cause)
+                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300">
+                        {{ $cause }}
+                      </span>
+                    @endforeach
+                  @endif
                 </div>
+                @if($riskLevel === 'Lacking Info')
+                  <div class="text-xs text-gray-500 mt-1">There is not enough information to make a risk assessment for this student yet.</div>
+                @endif
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
                 <div class="flex items-center gap-x-2 justify-center">

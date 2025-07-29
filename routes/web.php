@@ -515,7 +515,7 @@ Route::get('/subjects/{subject}/classes/{classSection}/{term}/grading', function
             }
         } catch (\Exception $e) {
             // If API is not available, use fallback risk assessment
-            $riskPredictions = self::calculateFallbackRisk($student);
+            $riskPredictions = ["Machine Learning is asleep rn dud"];
         }
         
         $student->risk_predictions = $riskPredictions;
@@ -638,6 +638,7 @@ Route::get('/students', [\App\Http\Controllers\StudentController::class, 'index'
 Route::post('/students', [\App\Http\Controllers\StudentController::class, 'store'])->name('students.store')->middleware('auth');
 Route::put('/students/{student}', [\App\Http\Controllers\StudentController::class, 'update'])->name('students.update')->middleware('auth');
 Route::delete('/students/{student}', [\App\Http\Controllers\StudentController::class, 'destroy'])->name('students.destroy')->middleware('auth');
+Route::get('/subjects/{subject}/classes/{classSection}/students/{student}/analysis', [App\Http\Controllers\StudentController::class, 'analysis'])->name('students.analysis');
 Route::post('/subjects/{subject}/classes/{classSection}/enroll', [\App\Http\Controllers\StudentController::class, 'enroll'])->name('students.enroll')->middleware('auth');
 Route::delete('/subjects/{subject}/classes/{classSection}/students/{student}', [\App\Http\Controllers\StudentController::class, 'remove'])->name('students.remove')->middleware('auth');
 Route::get('/subjects/{subject}/classes/{classSection}/available-students', [\App\Http\Controllers\StudentController::class, 'getAvailableStudents'])->name('students.available')->middleware('auth');
