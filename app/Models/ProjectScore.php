@@ -12,6 +12,7 @@ class ProjectScore extends Model
     protected $fillable = [
         'project_id',
         'student_id',
+        'term',
         'score',
         'submitted_at',
         'is_late',

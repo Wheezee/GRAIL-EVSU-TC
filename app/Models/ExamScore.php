@@ -10,6 +10,7 @@ class ExamScore extends Model
     protected $fillable = [
         'exam_id',
         'student_id',
+        'term',
         'score',
         'submitted_at',
     ];

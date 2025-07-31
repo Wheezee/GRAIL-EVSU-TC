@@ -108,17 +108,28 @@ class ExamController extends Controller
         foreach ($students as $student) {
             $score = $request->scores[$student->id] ?? null;
 
-            ExamScore::updateOrCreate(
-                [
+            // Find existing score for this exam and student
+            $existingScore = ExamScore::where('exam_id', $exam->id)
+                ->where('student_id', $student->id)
+                ->first();
+
+            if ($existingScore) {
+                // Update existing record
+                $existingScore->update([
+                    'term' => $term,
+                    'score' => $score,
+                    'submitted_at' => $score ? now() : null,
+                ]);
+            } else {
+                // Create new record
+                ExamScore::create([
                     'exam_id' => $exam->id,
                     'student_id' => $student->id,
                     'term' => $term,
-                ],
-                [
                     'score' => $score,
                     'submitted_at' => $score ? now() : null,
-                ]
-            );
+                ]);
+            }
         }
 
         return back()->with('success', 'Scores saved successfully!');

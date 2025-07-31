@@ -10,6 +10,7 @@ class QuizScore extends Model
     protected $fillable = [
         'quiz_id',
         'student_id',
+        'term',
         'score',
         'submitted_at',
     ];

@@ -656,20 +656,53 @@ Route::get('/subjects/{subject}/classes/{classSection}/{term}/gradebook', functi
 
             // Calculate term grade using weights
             if ($gradingWeight) {
-                $grade = 0;
-                $totalWeight = 0;
-                if ($activityAvg !== null) { $grade += $activityAvg * ($gradingWeight->activities/100); $totalWeight += $gradingWeight->activities; }
-                if ($quizAvg !== null) { $grade += $quizAvg * ($gradingWeight->quizzes/100); $totalWeight += $gradingWeight->quizzes; }
-                if ($examAvg !== null) { $grade += $examAvg * ($gradingWeight->exams/100); $totalWeight += $gradingWeight->exams; }
-                if ($recitationAvg !== null) { $grade += $recitationAvg * ($gradingWeight->recitation/100); $totalWeight += $gradingWeight->recitation; }
-                if ($projectAvg !== null) { $grade += $projectAvg * ($gradingWeight->projects/100); $totalWeight += $gradingWeight->projects; }
-                $student->{$t.'_grade'} = $totalWeight > 0 ? round($grade,1) : null;
+                // Prepare grades array for the computeGrade function
+                $grades = [];
+                $weights = [
+                    'activities' => $gradingWeight->activities / 100,
+                    'quizzes' => $gradingWeight->quizzes / 100,
+                    'exams' => $gradingWeight->exams / 100,
+                    'recitation' => $gradingWeight->recitation / 100,
+                    'projects' => $gradingWeight->projects / 100,
+                ];
+
+                // Check if assessment items exist for each category and add grades if they do
+                if ($assessments['activities'][$t]->count() > 0 && $activityScores->count() > 0) {
+                    $grades['activities'] = $activityScores->map(function($score) {
+                        return ($score->score / $score->activity->max_score) * 100;
+                    })->toArray();
+                }
+                if ($assessments['quizzes'][$t]->count() > 0 && $quizScores->count() > 0) {
+                    $grades['quizzes'] = $quizScores->map(function($score) {
+                        return ($score->score / $score->quiz->max_score) * 100;
+                    })->toArray();
+                }
+                if ($assessments['exams'][$t]->count() > 0 && $examScores->count() > 0) {
+                    $grades['exams'] = $examScores->map(function($score) {
+                        return ($score->score / $score->exam->max_score) * 100;
+                    })->toArray();
+                }
+                if ($assessments['recitations'][$t]->count() > 0 && $recitationScores->count() > 0) {
+                    $grades['recitation'] = $recitationScores->map(function($score) {
+                        return ($score->score / $score->recitation->max_score) * 100;
+                    })->toArray();
+                }
+                if ($assessments['projects'][$t]->count() > 0 && $projectScores->count() > 0) {
+                    $grades['projects'] = $projectScores->map(function($score) {
+                        return ($score->score / $score->project->max_score) * 100;
+                    })->toArray();
+                }
+
+                // Compute grade using the new function
+                $computedGrade = computeGrade($grades, $weights);
+                $student->{$t.'_grade'} = $computedGrade;
             } else {
                 $student->{$t.'_grade'} = null;
             }
         }
-        // Overall grade: average of midterm and finals if both exist
-        if ($student->midterms_grade !== null && $student->finals_grade !== null) {
+        // Overall grade: average of midterm and finals if both exist and are not INC
+        if ($student->midterms_grade !== null && $student->finals_grade !== null && 
+            $student->midterms_grade !== 'INC' && $student->finals_grade !== 'INC') {
             $student->overall_grade = round((($student->midterms_grade + $student->finals_grade)/2),1);
         } else {
             $student->overall_grade = null;
@@ -744,6 +777,33 @@ Route::get('/api/subjects/{subjectId}/classes', function ($subjectId) {
 
 // Grading weights update
 Route::post('/subjects/{subject}/grading-weights', [GradingWeightController::class, 'update'])->name('grading.weights.update')->middleware('auth');
+
+// Grade computation function
+function computeGrade($grades, $weights) {
+    $total = 0;
+    $totalWeight = 0;
+
+    foreach ($weights as $type => $weight) {
+        // If weight is 0, skip (e.g., recitation or projects)
+        if ($weight == 0) continue;
+
+        // If there are no grades for a weighted category, return INC
+        if (!isset($grades[$type]) || count($grades[$type]) == 0) {
+            return 'INC';
+        }
+
+        // Compute average for this type
+        $average = array_sum($grades[$type]) / count($grades[$type]);
+
+        // Add to total using weighted average
+        $total += $average * $weight;
+        $totalWeight += $weight;
+    }
+
+    // Normalize by total weight to avoid rounding errors
+    if ($totalWeight == 0) return 'INC'; // Edge case
+    return round($total / $totalWeight, 1); // Example: returns 82.4
+}
 
 // Fallback risk calculation function
 function calculateFallbackRisk($student) {

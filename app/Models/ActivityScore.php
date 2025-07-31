@@ -12,6 +12,7 @@ class ActivityScore extends Model
     protected $fillable = [
         'activity_id',
         'student_id',
+        'term',
         'score',
         'is_late',
         'submitted_at',

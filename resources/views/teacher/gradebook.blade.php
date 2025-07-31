@@ -40,15 +40,13 @@
     <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Gradebook - {{ $classSection->section }}</h2>
     <p class="text-gray-600 dark:text-gray-400 mt-1">{{ $classSection->subject->code }} - {{ $classSection->subject->title }}</p>
   </div>
-  <div class="flex gap-2">
-    <button class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-colors">
-      <i data-lucide="download" class="w-4 h-4"></i>
-      Export
-    </button>
-    <button class="inline-flex items-center gap-2 px-4 py-2 bg-evsu hover:bg-evsuDark text-white font-medium rounded-lg transition-colors">
-      <i data-lucide="plus" class="w-4 h-4"></i>
-      Add Assessment
-    </button>
+  <div class="flex items-center gap-2">
+    <label for="grading_mode" class="text-sm font-medium text-gray-700 dark:text-gray-300">Grading Mode:</label>
+    <select id="grading_mode" class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      <option value="percentage">Percentage-Based</option>
+      <option value="computed">Computed (1.0–5.0)</option>
+      <option value="rule_based">Rule-Based (1.0–5.0)</option>
+    </select>
   </div>
 </div>
 
@@ -59,7 +57,12 @@
       <tr>
         <th rowspan="3" class="px-6 py-3 text-left bg-white dark:bg-gray-800 sticky left-0 top-0 z-20">Students</th>
         @foreach(['activities' => 'Activities', 'quizzes' => 'Quizzes', 'exams' => 'Exams', 'recitations' => 'Recitation', 'projects' => 'Projects'] as $type => $label)
-          <th colspan="{{ count($assessments[$type]['midterms']) + count($assessments[$type]['finals']) }}" class="px-6 py-3 text-center bg-white dark:bg-gray-800 sticky top-0 z-10">{{ $label }}</th>
+          @php
+            $midtermCount = count($assessments[$type]['midterms']);
+            $finalsCount = count($assessments[$type]['finals']);
+            $colspan = max($midtermCount + $finalsCount, 1); // at least 1 to preserve table structure
+          @endphp
+          <th colspan="{{ $colspan }}" class="px-6 py-3 text-center bg-white dark:bg-gray-800 sticky top-0 z-10">{{ $label }}</th>
         @endforeach
         <th rowspan="3" class="px-6 py-3 text-center bg-white dark:bg-gray-800 sticky top-0 z-10">Midterm Grade</th>
         <th rowspan="3" class="px-6 py-3 text-center bg-white dark:bg-gray-800 sticky top-0 z-10">Finals Grade</th>
@@ -67,12 +70,27 @@
       </tr>
       <tr>
         @foreach(['activities', 'quizzes', 'exams', 'recitations', 'projects'] as $type)
-          <th colspan="{{ count($assessments[$type]['midterms']) }}" class="px-4 py-2 text-center bg-white dark:bg-gray-800 sticky top-8 z-10">Midterm</th>
-          <th colspan="{{ count($assessments[$type]['finals']) }}" class="px-4 py-2 text-center bg-white dark:bg-gray-800 sticky top-8 z-10">Finals</th>
+          @php
+            $midtermCount = count($assessments[$type]['midterms']);
+            $finalsCount = count($assessments[$type]['finals']);
+          @endphp
+          @if ($midtermCount > 0)
+            <th colspan="{{ $midtermCount }}" class="px-4 py-2 text-center bg-white dark:bg-gray-800 sticky top-8 z-10">Midterm</th>
+          @endif
+          @if ($finalsCount > 0)
+            <th colspan="{{ $finalsCount }}" class="px-4 py-2 text-center bg-white dark:bg-gray-800 sticky top-8 z-10">Finals</th>
+          @endif
+          @if ($midtermCount === 0 && $finalsCount === 0)
+            <th class="text-center px-4 py-2 bg-white dark:bg-gray-800 sticky top-8 z-10">No Assessments</th>
+          @endif
         @endforeach
       </tr>
       <tr>
         @foreach(['activities', 'quizzes', 'exams', 'recitations', 'projects'] as $type)
+          @php
+            $midtermCount = count($assessments[$type]['midterms']);
+            $finalsCount = count($assessments[$type]['finals']);
+          @endphp
           @foreach($assessments[$type]['midterms'] as $item)
             <th class="px-4 py-2 text-center bg-white dark:bg-gray-800 sticky top-16 z-10">
               <a href="{{ route($type.'.show', ['subject' => $classSection->subject->id, 'classSection' => $classSection->id, $type == 'activities' ? 'activity' : ($type == 'quizzes' ? 'quiz' : ($type == 'exams' ? 'exam' : ($type == 'recitations' ? 'recitation' : 'project')) ) => $item->id, 'term' => 'midterms']) }}"
@@ -89,6 +107,9 @@
               </a>
             </th>
           @endforeach
+          @if ($midtermCount === 0 && $finalsCount === 0)
+            <th class="text-center px-4 py-2 bg-white dark:bg-gray-800 sticky top-16 z-10">--</th>
+          @endif
         @endforeach
       </tr>
     </thead>
@@ -97,36 +118,76 @@
       <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
         <td class="px-6 py-3 bg-white dark:bg-gray-800 sticky left-0 z-10">{{ $student->last_name }}, {{ $student->first_name }}</td>
         @foreach(['activities', 'quizzes', 'exams', 'recitations', 'projects'] as $type)
+          @php
+            $midtermCount = count($assessments[$type]['midterms']);
+            $finalsCount = count($assessments[$type]['finals']);
+          @endphp
           {{-- Midterms --}}
-          @if(count($assessments[$type]['midterms']) > 0)
+          @if($midtermCount > 0)
             @foreach($assessments[$type]['midterms'] as $item)
               <td class="px-4 py-3 text-center hover:bg-yellow-100 dark:hover:bg-yellow-900 transition-colors">
                 <?php $score = $item->scores->where('student_id', $student->id)->first(); ?>
                 {{ $score && $score->score !== null ? $score->score : '--' }}
               </td>
             @endforeach
-          @else
-            <td class="px-4 py-3 text-center hover:bg-yellow-100 dark:hover:bg-yellow-900 transition-colors">--</td>
           @endif
           {{-- Finals --}}
-          @if(count($assessments[$type]['finals']) > 0)
+          @if($finalsCount > 0)
             @foreach($assessments[$type]['finals'] as $item)
               <td class="px-4 py-3 text-center hover:bg-yellow-100 dark:hover:bg-yellow-900 transition-colors">
                 <?php $score = $item->scores->where('student_id', $student->id)->first(); ?>
                 {{ $score && $score->score !== null ? $score->score : '--' }}
               </td>
             @endforeach
-          @else
+          @endif
+          {{-- Empty state --}}
+          @if($midtermCount === 0 && $finalsCount === 0)
             <td class="px-4 py-3 text-center hover:bg-yellow-100 dark:hover:bg-yellow-900 transition-colors">--</td>
           @endif
         @endforeach
-        <td class="px-4 py-3 text-center font-semibold">{{ $student->midterms_grade !== null ? $student->midterms_grade.'%' : '--' }}</td>
-        <td class="px-4 py-3 text-center font-semibold">{{ $student->finals_grade !== null ? $student->finals_grade.'%' : '--' }}</td>
-        <td class="px-4 py-3 text-center font-semibold">{{ $student->overall_grade !== null ? $student->overall_grade.'%' : '--' }}</td>
+        <td class="px-4 py-3 text-center font-semibold">
+            @if($student->midterms_grade === 'INC')
+                <span class="text-red-600 font-bold">INC</span>
+            @elseif($student->midterms_grade !== null)
+                <span class="grade-display" data-grade="{{ $student->midterms_grade }}" data-type="percentage">
+                    {{ $student->midterms_grade }}%
+                </span>
+            @else
+                --
+            @endif
+        </td>
+        <td class="px-4 py-3 text-center font-semibold">
+            @if($student->finals_grade === 'INC')
+                <span class="text-red-600 font-bold">INC</span>
+            @elseif($student->finals_grade !== null)
+                <span class="grade-display" data-grade="{{ $student->finals_grade }}" data-type="percentage">
+                    {{ $student->finals_grade }}%
+                </span>
+            @else
+                --
+            @endif
+        </td>
+        <td class="px-4 py-3 text-center font-semibold">
+            @if($student->overall_grade !== null)
+                <span class="grade-display" data-grade="{{ $student->overall_grade }}" data-type="percentage">
+                    {{ $student->overall_grade }}%
+                </span>
+            @else
+                --
+            @endif
+        </td>
       </tr>
       @endforeach
     </tbody>
   </table>
+</div>
+
+<!-- Export Button -->
+<div class="mt-6 flex justify-end">
+  <button class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-colors">
+    <i data-lucide="download" class="w-4 h-4"></i>
+    Export
+  </button>
 </div>
 
 <!-- Legend and Weights Display -->
@@ -205,6 +266,87 @@
 </div>
 
 <script>
+// Grade display functionality with multiple modes
+let currentGradingMode = 'percentage'; // Default to percentage
+
+// Grade conversion functions
+function convertGrade(percentage, mode) {
+  if (mode === 'percentage') {
+    return percentage + '%';
+  }
+
+  if (mode === 'computed') {
+    if (percentage >= 100) return '1.0';
+    if (percentage >= 60) {
+      const grade = 3.0 - ((percentage - 60) / 40) * 2.0;
+      return grade.toFixed(2);
+    }
+    return '5.0';
+  }
+
+  if (mode === 'rule_based') {
+    if (percentage >= 97) return '1.00';
+    if (percentage >= 94) return '1.25';
+    if (percentage >= 91) return '1.50';
+    if (percentage >= 88) return '1.75';
+    if (percentage >= 85) return '2.00';
+    if (percentage >= 82) return '2.25';
+    if (percentage >= 79) return '2.50';
+    if (percentage >= 76) return '2.75';
+    if (percentage >= 75) return '3.00';
+    return '5.00';
+  }
+}
+
+// Color coding for different grading modes
+function getGradeColor(grade, mode) {
+  if (mode === 'percentage') {
+    return ''; // No color for percentage
+  }
+  
+  if (mode === 'computed' || mode === 'rule_based') {
+    const numGrade = parseFloat(grade);
+    if (numGrade <= 1.0) return 'text-green-600'; // Excellent
+    if (numGrade <= 1.5) return 'text-blue-600'; // Very Good to Good
+    if (numGrade <= 1.75) return 'text-yellow-600'; // Satisfactory
+    if (numGrade <= 2.5) return 'text-orange-600'; // Fair
+    if (numGrade <= 2.75) return 'text-orange-600'; // Passing
+    if (numGrade <= 3.0) return 'text-red-500'; // Lowest Passing
+    return 'text-red-700'; // Failed
+  }
+  
+  return '';
+}
+
+function updateGradeDisplay() {
+  const gradeDisplays = document.querySelectorAll('.grade-display');
+  const gradingMode = document.getElementById('grading_mode').value;
+  
+  gradeDisplays.forEach(display => {
+    const grade = parseFloat(display.dataset.grade);
+    if (!isNaN(grade)) {
+      const convertedGrade = convertGrade(grade, gradingMode);
+      display.textContent = convertedGrade;
+      display.dataset.type = gradingMode;
+      
+      // Apply color coding
+      const colorClass = getGradeColor(convertedGrade, gradingMode);
+      display.className = 'grade-display';
+      if (colorClass) {
+        display.classList.add('font-bold', colorClass);
+      }
+    }
+  });
+}
+
+// Add event listener to grading mode dropdown
+document.addEventListener('DOMContentLoaded', function() {
+  const gradingModeSelect = document.getElementById('grading_mode');
+  if (gradingModeSelect) {
+    gradingModeSelect.addEventListener('change', updateGradeDisplay);
+  }
+});
+
 // Auto-save functionality (placeholder)
 document.querySelectorAll('input[type="number"]').forEach(input => {
   input.addEventListener('change', function() {

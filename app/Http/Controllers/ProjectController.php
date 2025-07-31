@@ -119,19 +119,32 @@ class ProjectController extends Controller
                      $request->late_submissions[$student->id];
             $resubmissionCount = $request->resubmission_counts[$student->id] ?? 0;
 
-            ProjectScore::updateOrCreate(
-                [
-                    'project_id' => $project->id,
-                    'student_id' => $student->id,
+            // Find existing score for this project and student
+            $existingScore = ProjectScore::where('project_id', $project->id)
+                ->where('student_id', $student->id)
+                ->first();
+
+            if ($existingScore) {
+                // Update existing record
+                $existingScore->update([
                     'term' => $term,
-                ],
-                [
                     'score' => $score,
                     'is_late' => $isLate,
                     'resubmission_count' => $resubmissionCount,
                     'submitted_at' => $score ? now() : null,
-                ]
-            );
+                ]);
+            } else {
+                // Create new record
+                ProjectScore::create([
+                    'project_id' => $project->id,
+                    'student_id' => $student->id,
+                    'term' => $term,
+                    'score' => $score,
+                    'is_late' => $isLate,
+                    'resubmission_count' => $resubmissionCount,
+                    'submitted_at' => $score ? now() : null,
+                ]);
+            }
         }
 
         return back()->with('success', 'Scores saved successfully!');

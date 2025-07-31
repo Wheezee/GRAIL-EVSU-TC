@@ -391,7 +391,7 @@
     <p class="text-lg text-gray-500 mb-2">No projects found. Click 'Add Project' to get started.</p>
     <button onclick="openAddProjectModal()" class="inline-flex items-center gap-2 px-5 py-2.5 bg-evsu hover:bg-evsuDark text-white font-semibold rounded-lg shadow transition-transform transform hover:scale-105 focus:outline-none">
       <i data-lucide="plus" class="w-5 h-5"></i>
-      ➕ Add Project
+      Add Project
     </button>
   </div>
 @endif

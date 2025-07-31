@@ -12,6 +12,7 @@ class RecitationScore extends Model
     protected $fillable = [
         'recitation_id',
         'student_id',
+        'term',
         'score',
         'submitted_at',
     ];

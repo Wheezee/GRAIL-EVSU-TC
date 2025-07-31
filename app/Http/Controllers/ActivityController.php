@@ -115,18 +115,30 @@ class ActivityController extends Controller
                      isset($request->late_submissions[$student->id]) && 
                      $request->late_submissions[$student->id];
 
-            ActivityScore::updateOrCreate(
-                [
-                    'activity_id' => $activity->id,
-                    'student_id' => $student->id,
+            // Find existing score for this activity and student
+            $existingScore = ActivityScore::where('activity_id', $activity->id)
+                ->where('student_id', $student->id)
+                ->first();
+
+            if ($existingScore) {
+                // Update existing record
+                $existingScore->update([
                     'term' => $term,
-                ],
-                [
                     'score' => $score,
                     'is_late' => $isLate,
                     'submitted_at' => $score ? now() : null,
-                ]
-            );
+                ]);
+            } else {
+                // Create new record
+                ActivityScore::create([
+                    'activity_id' => $activity->id,
+                    'student_id' => $student->id,
+                    'term' => $term,
+                    'score' => $score,
+                    'is_late' => $isLate,
+                    'submitted_at' => $score ? now() : null,
+                ]);
+            }
         }
 
         return back()->with('success', 'Scores saved successfully!');
