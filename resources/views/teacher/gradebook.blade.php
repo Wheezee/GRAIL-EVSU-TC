@@ -40,13 +40,22 @@
     <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Gradebook - {{ $classSection->section }}</h2>
     <p class="text-gray-600 dark:text-gray-400 mt-1">{{ $classSection->subject->code }} - {{ $classSection->subject->title }}</p>
   </div>
-  <div class="flex items-center gap-2">
-    <label for="grading_mode" class="text-sm font-medium text-gray-700 dark:text-gray-300">Grading Mode:</label>
-    <select id="grading_mode" class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-      <option value="percentage">Percentage-Based</option>
-      <option value="computed">Computed (1.0–5.0)</option>
-      <option value="rule_based">Rule-Based (1.0–5.0)</option>
-    </select>
+  <div class="flex items-center gap-4">
+    <div class="flex items-center gap-2">
+      <label for="grading_mode" class="text-sm font-medium text-gray-700 dark:text-gray-300">Grading Mode:</label>
+      <select id="grading_mode" class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        <option value="percentage">Percentage-Based</option>
+        <option value="computed">Computed (1.0–5.0)</option>
+        <option value="rule_based">Rule-Based (1.0–5.0)</option>
+      </select>
+    </div>
+    
+    <div class="w-px h-6 bg-gray-300 dark:bg-gray-600"></div>
+    
+    <button onclick="document.getElementById('export-modal').classList.remove('hidden')" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-colors">
+      <i data-lucide="download" class="w-4 h-4"></i>
+      Export
+    </button>
   </div>
 </div>
 
@@ -182,14 +191,6 @@
   </table>
 </div>
 
-<!-- Export Button -->
-<div class="mt-6 flex justify-end">
-  <button class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-colors">
-    <i data-lucide="download" class="w-4 h-4"></i>
-    Export
-  </button>
-</div>
-
 <!-- Legend and Weights Display -->
 <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
   <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -262,6 +263,64 @@
         <button type="submit" class="px-4 py-2 bg-evsu hover:bg-evsuDark text-white font-medium rounded-lg transition-colors">Save</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Export Modal -->
+<div id="export-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md p-6 relative">
+    <button class="absolute top-2 right-2 text-gray-400 hover:text-gray-700" onclick="document.getElementById('export-modal').classList.add('hidden')">
+      <i data-lucide="x" class="w-5 h-5"></i>
+    </button>
+    <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Export Gradebook</h3>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Export Format:</label>
+        <div class="space-y-2">
+          <label class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+            <input type="radio" name="export_format" value="pdf" class="text-blue-600 focus:ring-blue-500" checked>
+            <div class="flex items-center gap-2">
+              <i data-lucide="file-text" class="w-5 h-5 text-red-500"></i>
+              <span class="text-gray-900 dark:text-gray-100">PDF Document</span>
+            </div>
+          </label>
+          <label class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+            <input type="radio" name="export_format" value="excel" class="text-blue-600 focus:ring-blue-500">
+            <div class="flex items-center gap-2">
+              <i data-lucide="file-spreadsheet" class="w-5 h-5 text-green-500"></i>
+              <span class="text-gray-900 dark:text-gray-100">Excel Spreadsheet</span>
+            </div>
+          </label>
+        </div>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+          Exports current table data using lightweight client-side extraction.
+        </p>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Include:</label>
+        <div class="space-y-2">
+          <label class="flex items-center gap-2">
+            <input type="checkbox" id="include_weights" class="rounded text-blue-600 focus:ring-blue-500" checked>
+            <span class="text-sm text-gray-700 dark:text-gray-300">Grading weights</span>
+          </label>
+          <label class="flex items-center gap-2">
+            <input type="checkbox" id="include_legend" class="rounded text-blue-600 focus:ring-blue-500" checked>
+            <span class="text-sm text-gray-700 dark:text-gray-300">Grade legend</span>
+          </label>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mt-6 flex justify-end gap-3">
+      <button onclick="document.getElementById('export-modal').classList.add('hidden')" class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+        Cancel
+      </button>
+      <button onclick="exportGradebook()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
+        <i data-lucide="download" class="w-4 h-4 inline mr-2"></i>
+        Export
+      </button>
+    </div>
   </div>
 </div>
 
@@ -345,7 +404,162 @@ document.addEventListener('DOMContentLoaded', function() {
   if (gradingModeSelect) {
     gradingModeSelect.addEventListener('change', updateGradeDisplay);
   }
+  
+  // Reinitialize Lucide icons for modals
+  if (window.lucide) {
+    lucide.createIcons();
+  }
 });
+
+// Export functionality
+function exportGradebook() {
+  const format = document.querySelector('input[name="export_format"]:checked').value;
+  const includeWeights = document.getElementById('include_weights').checked;
+  const includeLegend = document.getElementById('include_legend').checked;
+  const gradingMode = document.getElementById('grading_mode').value;
+  
+  // Get the gradebook table
+  const gradebookTable = document.querySelector('.bg-white.dark\\:bg-gray-800.border.border-gray-200.dark\\:border-gray-700.rounded-xl.shadow-sm.overflow-x-auto.hide-scrollbar table');
+  
+  if (!gradebookTable) {
+    alert('Could not find gradebook table');
+    return;
+  }
+  
+  // Extract table data from the current HTML
+  const tableData = extractTableData(gradebookTable);
+  
+  // Get current URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const subjectId = '{{ $classSection->subject->id }}';
+  const classSectionId = '{{ $classSection->id }}';
+  
+  // Build export URL with the extracted data
+  let exportUrl = `/subjects/${subjectId}/classes/${classSectionId}/gradebook/export?format=${format}&grading_mode=${gradingMode}`;
+  
+  if (includeWeights) {
+    exportUrl += '&include_weights=1';
+  }
+  
+  if (includeLegend) {
+    exportUrl += '&include_legend=1';
+  }
+  
+  // Add the table data as a parameter
+  exportUrl += `&table_data=${encodeURIComponent(JSON.stringify(tableData))}`;
+  
+  // Show loading state
+  const exportButton = document.querySelector('#export-modal button[onclick="exportGradebook()"]');
+  const originalText = exportButton.innerHTML;
+  exportButton.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 inline mr-2 animate-spin"></i>Exporting...';
+  exportButton.disabled = true;
+  
+  // Trigger file download
+  window.location.href = exportUrl;
+  
+  // Close modal after a short delay
+  setTimeout(() => {
+    document.getElementById('export-modal').classList.add('hidden');
+  }, 1000);
+  
+  // Reset button
+  exportButton.innerHTML = originalText;
+  exportButton.disabled = false;
+  if (window.lucide) {
+    lucide.createIcons();
+  }
+}
+
+// Function to extract table data from the current HTML
+function extractTableData(table) {
+  const data = {
+    headers: [],
+    students: [],
+    assessments: {
+      activities: { midterms: [], finals: [] },
+      quizzes: { midterms: [], finals: [] },
+      exams: { midterms: [], finals: [] },
+      recitations: { midterms: [], finals: [] },
+      projects: { midterms: [], finals: [] }
+    }
+  };
+  
+  // Extract headers
+  const headerRows = table.querySelectorAll('thead tr');
+  if (headerRows.length >= 3) {
+    // First row - main categories
+    const mainHeaders = headerRows[0].querySelectorAll('th');
+    mainHeaders.forEach((th, index) => {
+      if (index === 0) {
+        data.headers.push({ type: 'student', text: th.textContent.trim() });
+      } else {
+        const colspan = parseInt(th.getAttribute('colspan')) || 1;
+        data.headers.push({ type: 'category', text: th.textContent.trim(), colspan });
+      }
+    });
+    
+    // Second row - terms (midterm/finals)
+    const termHeaders = headerRows[1].querySelectorAll('th');
+    const termMap = [];
+    termHeaders.forEach(th => {
+      termMap.push(th.textContent.trim());
+    });
+    
+    // Third row - assessment names with term mapping
+    const assessmentHeaders = headerRows[2].querySelectorAll('th');
+    let termIndex = 0;
+    let currentTerm = '';
+    
+    assessmentHeaders.forEach((th, index) => {
+      // Find which term this assessment belongs to
+      // We need to map the assessment to its corresponding term
+      const link = th.querySelector('a');
+      const assessmentText = th.textContent.trim();
+      
+      // Determine the term based on the link URL or position
+      let term = '';
+      if (link) {
+        const href = link.href;
+        if (href.includes('/midterms/')) {
+          term = 'Midterm';
+        } else if (href.includes('/finals/')) {
+          term = 'Finals';
+        }
+      }
+      
+      // Create assessment header with term
+      const assessmentHeader = {
+        type: 'assessment',
+        text: assessmentText,
+        term: term,
+        fullText: term ? `${assessmentText} - ${term}` : assessmentText,
+        link: link ? link.href : null
+      };
+      
+      data.headers.push(assessmentHeader);
+    });
+  }
+  
+  // Extract student data
+  const studentRows = table.querySelectorAll('tbody tr');
+  studentRows.forEach(row => {
+    const cells = row.querySelectorAll('td');
+    const student = {
+      name: cells[0].textContent.trim(),
+      scores: []
+    };
+    
+    // Extract scores starting from the second cell (skip student name)
+    for (let i = 1; i < cells.length; i++) {
+      const score = cells[i].textContent.trim();
+      student.scores.push(score);
+    }
+    
+    data.students.push(student);
+  });
+  
+  return data;
+}
 
 // Auto-save functionality (placeholder)
 document.querySelectorAll('input[type="number"]').forEach(input => {

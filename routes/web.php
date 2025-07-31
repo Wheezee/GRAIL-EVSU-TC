@@ -712,6 +712,9 @@ Route::get('/subjects/{subject}/classes/{classSection}/{term}/gradebook', functi
     return view('teacher.gradebook', compact('classSection', 'term', 'gradingWeight', 'students', 'assessments'));
 })->name('gradebook.all')->middleware('auth');
 
+// Gradebook export route
+Route::get('/subjects/{subject}/classes/{classSection}/gradebook/export', [\App\Http\Controllers\GradebookExportController::class, 'export'])->name('gradebook.export')->middleware('auth');
+
 // Student management routes
 Route::get('/students', [\App\Http\Controllers\StudentController::class, 'index'])->name('students.index')->middleware('auth');
 Route::get('/students/{student}', [\App\Http\Controllers\StudentController::class, 'show'])->name('students.show')->middleware('auth');
